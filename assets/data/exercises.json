@@ -1,0 +1,64 @@
+{
+  "exercises": [
+    {
+      "id": "starter-squat",
+      "name": "Squat",
+      "category": "Legs",
+      "targetType": "repetitions",
+      "sets": 3,
+      "repetitions": 12,
+      "isCompleted": false,
+      "order": 0
+    },
+    {
+      "id": "starter-push-up",
+      "name": "Push-up",
+      "category": "Chest",
+      "targetType": "repetitions",
+      "sets": 3,
+      "repetitions": 10,
+      "isCompleted": false,
+      "order": 1
+    },
+    {
+      "id": "starter-bent-over-row",
+      "name": "Bent-over Row",
+      "category": "Back",
+      "targetType": "repetitions",
+      "sets": 3,
+      "repetitions": 10,
+      "isCompleted": false,
+      "order": 2
+    },
+    {
+      "id": "starter-reverse-lunge",
+      "name": "Reverse Lunge",
+      "category": "Legs",
+      "targetType": "repetitions",
+      "sets": 3,
+      "repetitions": 8,
+      "isCompleted": false,
+      "order": 3
+    },
+    {
+      "id": "starter-plank",
+      "name": "Plank",
+      "category": "Core",
+      "targetType": "duration",
+      "sets": 3,
+      "durationSeconds": 45,
+      "isCompleted": false,
+      "order": 4
+    },
+    {
+      "id": "starter-jumping-jacks",
+      "name": "Jumping Jacks",
+      "category": "Cardio",
+      "targetType": "duration",
+      "sets": 2,
+      "durationSeconds": 60,
+      "isCompleted": false,
+      "order": 5
+    }
+  ]
+}
