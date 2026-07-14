@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="train_in_blue"
+        android:label="TrainInBlue"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
