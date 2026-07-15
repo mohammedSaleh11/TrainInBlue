@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../data/models/active_exercise_timer.dart';
 import '../../data/models/exercise.dart';
 import '../../data/models/workout_progress.dart';
 
@@ -26,6 +27,7 @@ class WorkoutState extends Equatable {
     this.failureReason,
     this.hasPendingSaveFailure = false,
     this.celebrationPending = false,
+    this.activeTimers = const <String, ActiveExerciseTimer>{},
   });
 
   const WorkoutState.loading() : this._(status: WorkoutStatus.loading);
@@ -35,6 +37,8 @@ class WorkoutState extends Equatable {
     List<Exercise> exercises, {
     bool hasPendingSaveFailure = false,
     bool celebrationPending = false,
+    Map<String, ActiveExerciseTimer> activeTimers =
+        const <String, ActiveExerciseTimer>{},
   }) {
     return WorkoutState._(
       status: exercises.isEmpty ? WorkoutStatus.empty : WorkoutStatus.ready,
@@ -42,6 +46,7 @@ class WorkoutState extends Equatable {
       progress: WorkoutProgress.fromExercises(exercises),
       hasPendingSaveFailure: hasPendingSaveFailure,
       celebrationPending: celebrationPending,
+      activeTimers: Map<String, ActiveExerciseTimer>.unmodifiable(activeTimers),
     );
   }
 
@@ -60,6 +65,9 @@ class WorkoutState extends Equatable {
   /// One-shot flag raised when the final exercise was just completed.
   final bool celebrationPending;
 
+  /// In-memory countdowns keyed by exercise id (not persisted).
+  final Map<String, ActiveExerciseTimer> activeTimers;
+
   bool get hasSession =>
       status == WorkoutStatus.ready || status == WorkoutStatus.empty;
 
@@ -73,9 +81,12 @@ class WorkoutState extends Equatable {
     return null;
   }
 
+  ActiveExerciseTimer? timerFor(String exerciseId) => activeTimers[exerciseId];
+
   WorkoutState copyWith({
     bool? hasPendingSaveFailure,
     bool? celebrationPending,
+    Map<String, ActiveExerciseTimer>? activeTimers,
   }) {
     return WorkoutState._(
       status: status,
@@ -85,6 +96,9 @@ class WorkoutState extends Equatable {
       hasPendingSaveFailure:
           hasPendingSaveFailure ?? this.hasPendingSaveFailure,
       celebrationPending: celebrationPending ?? this.celebrationPending,
+      activeTimers: activeTimers == null
+          ? this.activeTimers
+          : Map<String, ActiveExerciseTimer>.unmodifiable(activeTimers),
     );
   }
 
@@ -96,5 +110,6 @@ class WorkoutState extends Equatable {
     failureReason,
     hasPendingSaveFailure,
     celebrationPending,
+    activeTimers,
   ];
 }

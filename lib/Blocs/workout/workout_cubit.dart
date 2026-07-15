@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../Core/Utils/exercise_id_generator.dart';
 import '../../Core/errors/app_exceptions.dart';
+import '../../data/models/active_exercise_timer.dart';
 import '../../data/models/exercise.dart';
 import '../../data/models/exercise_draft.dart';
+import '../../data/models/exercise_target_type.dart';
 import '../../data/models/workout_progress.dart';
 import '../../data/repositories/workout_repository.dart';
+import 'exercise_timer_engine.dart';
 import 'workout_state.dart';
 
 /// The single source of truth for the active workout session.
@@ -18,13 +23,20 @@ class WorkoutCubit extends Cubit<WorkoutState> {
     ExerciseIdGenerator? idGenerator,
   }) : _repository = repository,
        _idGenerator = idGenerator ?? ExerciseIdGenerator(),
-       super(const WorkoutState.loading());
+       super(const WorkoutState.loading()) {
+    _timers = ExerciseTimerEngine(
+      onChanged: _onTimersChanged,
+      onSetCompleted: _onTimerSetCompleted,
+    );
+  }
 
   final WorkoutRepository _repository;
   final ExerciseIdGenerator _idGenerator;
+  late final ExerciseTimerEngine _timers;
 
   /// Loads the saved workout (or seeds starter data on first launch).
   Future<void> loadWorkout() async {
+    _timers.reset(notify: false);
     emit(const WorkoutState.loading());
     try {
       final List<Exercise> exercises = await _repository.loadWorkout();
@@ -36,6 +48,7 @@ class WorkoutCubit extends Cubit<WorkoutState> {
 
   /// Recovery action: begin with an empty workout and persist that choice.
   Future<void> startEmpty() async {
+    _timers.reset(notify: false);
     await _commitSession(const <Exercise>[]);
   }
 
@@ -50,6 +63,7 @@ class WorkoutCubit extends Cubit<WorkoutState> {
                 exercise.copyWith(isCompleted: false, completedSets: 0),
           )
           .toList(growable: false);
+      _timers.reset(notify: false);
       await _commitSession(incomplete);
     } on AppException catch (exception) {
       _emitSafely(WorkoutState.failure(_reasonFor(exception)));
@@ -79,10 +93,24 @@ class WorkoutCubit extends Cubit<WorkoutState> {
               : exercise,
         )
         .toList(growable: false);
+    if (draft.targetType != ExerciseTargetType.duration ||
+        draft.durationSeconds == null) {
+      _timers.clear(id);
+    } else {
+      final ActiveExerciseTimer? current = state.timerFor(id);
+      if (current == null ||
+          current.totalSeconds != draft.durationSeconds) {
+        _timers.resetIdle(
+          exerciseId: id,
+          totalSeconds: draft.durationSeconds!,
+        );
+      }
+    }
     await _commitSession(updated);
   }
 
   Future<void> deleteExercise(String id) async {
+    _timers.clear(id);
     final List<Exercise> remaining = state.exercises
         .where((Exercise exercise) => exercise.id != id)
         .toList(growable: false);
@@ -117,18 +145,51 @@ class WorkoutCubit extends Cubit<WorkoutState> {
     );
   }
 
-  /// Records how many sets are finished for a repetition exercise.
+  /// Records how many sets are finished for an exercise.
   Future<void> trackCompletedSets(String id, int completedSets) async {
+    final Exercise? exercise = state.exerciseById(id);
     final List<Exercise> updated = state.exercises
         .map(
-          (Exercise exercise) => exercise.id == id
-              ? exercise.copyWith(
-                  completedSets: completedSets.clamp(0, exercise.sets),
+          (Exercise item) => item.id == id
+              ? item.copyWith(
+                  completedSets: completedSets.clamp(0, item.sets),
                 )
-              : exercise,
+              : item,
         )
         .toList(growable: false);
+    if (exercise != null &&
+        exercise.targetType == ExerciseTargetType.duration &&
+        exercise.durationSeconds != null) {
+      _timers.resetIdle(
+        exerciseId: id,
+        totalSeconds: exercise.durationSeconds!,
+      );
+    }
     await _commitSession(updated);
+  }
+
+  /// Ensures a duration timer exists for [exerciseId] (idle at full duration).
+  void ensureTimer({
+    required String exerciseId,
+    required int totalSeconds,
+  }) {
+    _timers.ensure(exerciseId: exerciseId, totalSeconds: totalSeconds);
+  }
+
+  /// Starts, pauses, or resumes the countdown for a duration exercise.
+  void toggleTimer({
+    required String exerciseId,
+    required int totalSeconds,
+  }) {
+    _timers.toggle(exerciseId: exerciseId, totalSeconds: totalSeconds);
+  }
+
+  /// Restarts the current set countdown and starts it immediately.
+  void restartTimer({
+    required String exerciseId,
+    required int totalSeconds,
+  }) {
+    _timers.restart(exerciseId: exerciseId, totalSeconds: totalSeconds);
   }
 
   /// Retries persisting the current session after a failed save.
@@ -144,6 +205,32 @@ class WorkoutCubit extends Cubit<WorkoutState> {
     emit(state.copyWith(celebrationPending: false));
   }
 
+  @override
+  Future<void> close() {
+    _timers.dispose();
+    return super.close();
+  }
+
+  void _onTimersChanged(Map<String, ActiveExerciseTimer> timers) {
+    if (!state.hasSession) {
+      return;
+    }
+    _emitSafely(state.copyWith(activeTimers: timers));
+  }
+
+  /// Persists a finished duration set as soon as the countdown hits zero.
+  void _onTimerSetCompleted(String exerciseId) {
+    final Exercise? exercise = state.exerciseById(exerciseId);
+    if (exercise == null ||
+        exercise.targetType != ExerciseTargetType.duration ||
+        exercise.completedSets >= exercise.sets) {
+      return;
+    }
+    unawaited(
+      trackCompletedSets(exerciseId, exercise.completedSets + 1),
+    );
+  }
+
   /// Emits the new session optimistically, then persists it atomically.
   /// A failed save keeps the session usable and raises the retry flag.
   Future<void> _commitSession(
@@ -151,8 +238,16 @@ class WorkoutCubit extends Cubit<WorkoutState> {
     bool celebrationPending = false,
   }) async {
     final List<Exercise> normalized = _normalizeOrder(exercises);
+    _timers.retainOnly(
+      normalized.map((Exercise exercise) => exercise.id).toSet(),
+    );
     _emitSafely(
-      WorkoutState.session(normalized, celebrationPending: celebrationPending),
+      WorkoutState.session(
+        normalized,
+        celebrationPending: celebrationPending,
+        activeTimers: _timers.snapshot,
+        hasPendingSaveFailure: state.hasPendingSaveFailure,
+      ),
     );
     await _persistCurrent(normalized);
   }
