@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../Core/Utils/duration_formatter.dart';
 import '../../Core/constants/app_strings.dart';
 import '../../Core/constants/colors.dart';
+import '../../data/models/active_exercise_timer.dart';
 import '../../data/models/exercise.dart';
 import '../../data/models/exercise_target_type.dart';
 import 'exercise_card_parts.dart';
@@ -19,6 +20,7 @@ class ExerciseCard extends StatelessWidget {
     required this.onOpen,
     required this.onEdit,
     required this.onDelete,
+    this.activeTimer,
   });
 
   final Exercise exercise;
@@ -27,6 +29,7 @@ class ExerciseCard extends StatelessWidget {
   final VoidCallback onOpen;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final ActiveExerciseTimer? activeTimer;
 
   String get _metaLabel {
     final String setsLabel = AppStrings.exerciseSetsLabel(exercise.sets);
@@ -80,6 +83,7 @@ class ExerciseCard extends StatelessWidget {
               category: exercise.category,
               metaLabel: _metaLabel,
               onToggleCompletion: onToggleCompletion,
+              activeTimer: activeTimer,
               actions: ExerciseCardHeroActions(
                 exercise: exercise,
                 reorderIndex: reorderIndex,

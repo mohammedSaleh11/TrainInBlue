@@ -5,11 +5,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../Blocs/workout/workout_cubit.dart';
 import '../../../Blocs/workout/workout_state.dart';
 import '../../../components/cards/exercise_card.dart';
+import '../../../data/models/active_exercise_timer.dart';
 import '../../../data/models/exercise.dart';
 import '../../../widgets/staggered_entrance.dart';
 
-/// One reorderable row. Subscribes only to its own [Exercise] so siblings
-/// do not rebuild when another card's completion or set count changes.
+/// One reorderable row. Subscribes only to its own [Exercise] (and timer) so
+/// siblings do not rebuild when another card's completion or set count changes.
 class WorkoutExerciseTile extends StatelessWidget {
   const WorkoutExerciseTile({
     super.key,
@@ -33,21 +34,32 @@ class WorkoutExerciseTile extends StatelessWidget {
       child: StaggeredEntrance(
         remountKey: exerciseId,
         delay: StaggeredEntrance.delayForIndex(reorderIndex + 1),
-        child: BlocSelector<WorkoutCubit, WorkoutState, Exercise?>(
-          selector: (WorkoutState state) => state.exerciseById(exerciseId),
-          builder: (BuildContext context, Exercise? exercise) {
+        child: BlocSelector<WorkoutCubit, WorkoutState, _TileView?>(
+          selector: (WorkoutState state) {
+            final Exercise? exercise = state.exerciseById(exerciseId);
             if (exercise == null) {
+              return null;
+            }
+            return _TileView(
+              exercise: exercise,
+              timer: state.timerFor(exerciseId),
+            );
+          },
+          builder: (BuildContext context, _TileView? view) {
+            if (view == null) {
               return const SizedBox.shrink();
             }
             final WorkoutCubit cubit = context.read<WorkoutCubit>();
             return RepaintBoundary(
               child: ExerciseCard(
-                exercise: exercise,
+                exercise: view.exercise,
                 reorderIndex: reorderIndex,
-                onToggleCompletion: () => cubit.toggleCompletion(exercise.id),
-                onOpen: () => onOpen(exercise),
-                onEdit: () => onEdit(exercise),
-                onDelete: () => onDelete(exercise),
+                activeTimer: view.timer,
+                onToggleCompletion: () =>
+                    cubit.toggleCompletion(view.exercise.id),
+                onOpen: () => onOpen(view.exercise),
+                onEdit: () => onEdit(view.exercise),
+                onDelete: () => onDelete(view.exercise),
               ),
             );
           },
@@ -55,4 +67,21 @@ class WorkoutExerciseTile extends StatelessWidget {
       ),
     );
   }
+}
+
+class _TileView {
+  const _TileView({required this.exercise, required this.timer});
+
+  final Exercise exercise;
+  final ActiveExerciseTimer? timer;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _TileView &&
+        other.exercise == exercise &&
+        other.timer == timer;
+  }
+
+  @override
+  int get hashCode => Object.hash(exercise, timer);
 }

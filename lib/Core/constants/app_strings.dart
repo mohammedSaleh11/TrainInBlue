@@ -151,6 +151,8 @@ class AppStrings {
   static const String timerFinishLastSet = 'Finish last set';
   static const String timerRemainingLabel = 'Remaining';
 
+  static String timerRunningLabel(String clock) => '$clock left';
+
   static String timerSetLabel(int current, int total) {
     if (total <= 0) return 'No sets';
     if (current > total) return 'All $total sets done';

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../Core/constants/colors.dart';
+import '../../data/models/active_exercise_timer.dart';
 import '../../data/models/exercise.dart';
 import '../../data/models/exercise_target_type.dart';
 import '../../widgets/exercise_image_hero.dart';
 import 'exercise_card_controls.dart';
+import 'exercise_card_live_timer.dart';
 
 /// Quiet editorial hero — photography first, restrained typography.
 class ExerciseCardHero extends StatelessWidget {
@@ -17,6 +19,7 @@ class ExerciseCardHero extends StatelessWidget {
     required this.metaLabel,
     required this.onToggleCompletion,
     required this.actions,
+    this.activeTimer,
   });
 
   final Exercise exercise;
@@ -25,15 +28,16 @@ class ExerciseCardHero extends StatelessWidget {
   final String metaLabel;
   final VoidCallback onToggleCompletion;
   final Widget actions;
+  final ActiveExerciseTimer? activeTimer;
 
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
-    final bool showProgress =
-        exercise.targetType == ExerciseTargetType.repetitions;
+    final bool isDuration =
+        exercise.targetType == ExerciseTargetType.duration;
 
     return SizedBox(
-      height: 236.h,
+      height: isDuration ? 248.h : 236.h,
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
@@ -59,7 +63,7 @@ class ExerciseCardHero extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(20.w, 14.h, 12.w, 18.h),
+            padding: EdgeInsetsDirectional.fromSTEB(20.w, 14.h, 12.w, 16.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -105,13 +109,18 @@ class ExerciseCardHero extends StatelessWidget {
                     height: 1.3,
                   ),
                 ),
-                if (showProgress) ...<Widget>[
-                  SizedBox(height: 14.h),
+                SizedBox(height: 12.h),
+                if (isDuration)
+                  ExerciseCardLiveTimer(
+                    completedSets: exercise.completedSets,
+                    totalSets: exercise.sets,
+                    activeTimer: activeTimer,
+                  )
+                else
                   ExerciseSetProgress(
                     completedSets: exercise.completedSets,
                     totalSets: exercise.sets,
                   ),
-                ],
               ],
             ),
           ),

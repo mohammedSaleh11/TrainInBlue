@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:train_in_blue/Blocs/workout/workout_cubit.dart';
 import 'package:train_in_blue/Core/constants/app_keys.dart';
 import 'package:train_in_blue/Core/constants/app_strings.dart';
+import 'package:train_in_blue/Core/services/navigation_service.dart';
 import 'package:train_in_blue/data/models/exercise.dart';
 import 'package:train_in_blue/data/models/exercise_target_type.dart';
 import 'package:train_in_blue/screens/workout/workout_home_screen.dart';
@@ -123,13 +124,8 @@ void main() {
     expect(find.text('0:15'), findsOneWidget);
 
     await tester.pump(const Duration(seconds: 16));
-    expect(find.text('0:00'), findsOneWidget);
-    expect(find.text(AppStrings.timerDone), findsOneWidget);
-    expect(find.byKey(AppKeys.timerNextSetButton), findsOneWidget);
-    expect(find.text(AppStrings.timerFinishLastSet), findsOneWidget);
-
-    await tester.tap(find.byKey(AppKeys.timerNextSetButton));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
     expect(find.text(AppStrings.allSetsTracked), findsOneWidget);
     expect(repository.savedExercises!.first.completedSets, 1);
   });
@@ -160,11 +156,8 @@ void main() {
     await tester.tap(find.byKey(AppKeys.timerToggleButton));
     await tester.pump();
     await tester.pump(const Duration(seconds: 11));
-    expect(find.text(AppStrings.timerDone), findsOneWidget);
-    expect(find.text(AppStrings.timerNextSet), findsOneWidget);
-
-    await tester.tap(find.byKey(AppKeys.timerNextSetButton));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
     expect(repository.savedExercises!.first.completedSets, 1);
     expect(find.text(AppStrings.timerSetLabel(2, 2)), findsOneWidget);
     expect(find.text('0:10'), findsOneWidget);
@@ -172,12 +165,127 @@ void main() {
     await tester.tap(find.byKey(AppKeys.timerToggleButton));
     await tester.pump();
     await tester.pump(const Duration(seconds: 11));
-    expect(find.text(AppStrings.timerFinishLastSet), findsOneWidget);
-
-    await tester.tap(find.byKey(AppKeys.timerNextSetButton));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
     expect(repository.savedExercises!.first.completedSets, 2);
     expect(find.text(AppStrings.allSetsTracked), findsOneWidget);
+  });
+
+  testWidgets('duration timer keeps running on home after leaving detail', (
+    WidgetTester tester,
+  ) async {
+    await pumpHome(
+      tester,
+      savedExercises: <Exercise>[
+        buildExercise(
+          id: 'ex-1',
+          order: 0,
+          name: 'Plank',
+          category: 'Core',
+          targetType: ExerciseTargetType.duration,
+          durationSeconds: 30,
+          sets: 2,
+        ),
+      ],
+    );
+
+    await openDetail(tester, 'ex-1');
+    await tester.ensureVisible(find.byKey(AppKeys.timerToggleButton));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(AppKeys.timerToggleButton));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 11));
+    expect(find.text('0:19'), findsOneWidget);
+
+    // Avoid pumpAndSettle while the timer ticks — it never goes idle.
+    NavigationService.pop();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.text('0:19'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 5));
+    expect(find.text('0:14'), findsOneWidget);
+
+    // Pause so the periodic ticker is not left pending when the test ends.
+    workoutCubit.toggleTimer(exerciseId: 'ex-1', totalSeconds: 30);
+    await tester.pump();
+  });
+
+  testWidgets('finished duration sets stay visible on home', (
+    WidgetTester tester,
+  ) async {
+    await pumpHome(
+      tester,
+      savedExercises: <Exercise>[
+        buildExercise(
+          id: 'ex-1',
+          order: 0,
+          name: 'Jumping Jacks',
+          category: 'Cardio',
+          targetType: ExerciseTargetType.duration,
+          durationSeconds: 5,
+          sets: 2,
+        ),
+      ],
+    );
+
+    await openDetail(tester, 'ex-1');
+    await tester.ensureVisible(find.byKey(AppKeys.timerToggleButton));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(AppKeys.timerToggleButton));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(repository.savedExercises!.first.completedSets, 1);
+
+    NavigationService.pop();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.text(AppStrings.timerSetLabel(2, 2)), findsOneWidget);
+  });
+
+  testWidgets('home shows live timer and set reached for duration exercises', (
+    WidgetTester tester,
+  ) async {
+    await pumpHome(
+      tester,
+      savedExercises: <Exercise>[
+        buildExercise(
+          id: 'ex-1',
+          order: 0,
+          name: 'Plank',
+          category: 'Core',
+          targetType: ExerciseTargetType.duration,
+          durationSeconds: 20,
+          sets: 3,
+          completedSets: 1,
+        ),
+      ],
+    );
+
+    expect(find.text(AppStrings.timerSetLabel(2, 3)), findsOneWidget);
+
+    await openDetail(tester, 'ex-1');
+    await tester.ensureVisible(find.byKey(AppKeys.timerToggleButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(AppKeys.timerToggleButton));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 5));
+
+    NavigationService.pop();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.text('0:15'), findsOneWidget);
+    expect(find.text(AppStrings.timerSetLabel(2, 3)), findsOneWidget);
+
+    workoutCubit.toggleTimer(exerciseId: 'ex-1', totalSeconds: 20);
+    await tester.pump();
   });
 
   testWidgets('deleting from detail returns home and removes the exercise', (
