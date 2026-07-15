@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TrainInBlue — Product Documentation</title>
+<style>
+  /* ============================================================
+     TrainInBlue — Product Documentation
+     Palette sourced from lib/Core/constants/colors.dart
+     ============================================================ */
+  :root {
+    --primary-blue: #2563EB;
+    --primary-blue-dark: #1D4ED8;
+    --sky-blue: #60A5FA;
+    --deep-navy: #0A1E4A;
+    --ice-bg: #F2F6FD;
+    --surface-white: #FFFFFF;
+    --surface-tint: #E7EEFB;
+    --outline-soft: #DCE5F3;
+    --text-primary: #0F1F40;
+    --text-secondary: #5B6B87;
+    --text-muted: #8A97B1;
+    --success-green: #16A34A;
+    --success-surface: #E5F6EB;
+    --success-ink: #14532D;
+    --destructive-red: #DC2626;
+    --destructive-surface: #FCE9E9;
+
+    --grad-brand: linear-gradient(135deg, #1D4ED8 0%, #2563EB 45%, #60A5FA 100%);
+    --grad-navy: linear-gradient(160deg, #0A1E4A 0%, #10306E 55%, #1D4ED8 130%);
+    --shadow-sm: 0 2px 8px rgba(10, 30, 74, 0.06);
+    --shadow-md: 0 12px 30px rgba(10, 30, 74, 0.10);
+    --shadow-lg: 0 26px 60px rgba(10, 30, 74, 0.18);
+    --radius: 20px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  body {
+    font-family: 'Manrope', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-primary);
+    background: var(--ice-bg);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  /* ---------- Page model (A4) ---------- */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    background: var(--surface-white);
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    break-after: page;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  .pad { padding: 17mm 18mm; }
+
+  /* ---------- Typography ---------- */
+  h1, h2, h3, h4 { color: var(--text-primary); line-height: 1.18; font-weight: 800; letter-spacing: -0.02em; }
+  h2 { font-size: 27px; }
+  h3 { font-size: 19px; }
+  h4 { font-size: 15px; }
+  p { color: var(--text-secondary); }
+  a { color: var(--primary-blue); text-decoration: none; }
+  .lead { font-size: 17px; color: var(--text-secondary); }
+  .muted { color: var(--text-muted); }
+  .mono { font-family: 'JetBrains Mono', 'Consolas', ui-monospace, monospace; }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    text-transform: uppercase; letter-spacing: 0.18em; font-size: 11px; font-weight: 800;
+    color: var(--primary-blue); background: var(--surface-tint);
+    padding: 6px 12px; border-radius: 999px;
+  }
+
+  .section-head { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .section-num {
+    flex: 0 0 auto;
+    width: 46px; height: 46px; border-radius: 14px;
+    background: var(--grad-brand); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 18px; box-shadow: var(--shadow-md);
+  }
+  .section-sub { color: var(--text-secondary); font-size: 14.5px; margin: 6px 0 18px; max-width: 62ch; }
+  .rule { height: 1px; background: var(--outline-soft); border: 0; margin: 18px 0; }
+
+  /* ============================================================
+     COVER
+     ============================================================ */
+  .cover { background: var(--grad-navy); color: #fff; display: flex; flex-direction: column; }
+  .cover .pad { padding: 24mm 22mm; display: flex; flex-direction: column; height: 297mm; }
+  .cover-bubble { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.06); }
+  .cover-bubble.b1 { width: 420px; height: 420px; top: -120px; right: -110px; }
+  .cover-bubble.b2 { width: 300px; height: 300px; bottom: 60px; left: -120px; background: rgba(96,165,250,0.14); }
+  .cover-bubble.b3 { width: 180px; height: 180px; top: 46%; right: 60px; background: rgba(255,255,255,0.05); }
+
+  .cover-top { display: flex; align-items: center; gap: 14px; position: relative; z-index: 2; }
+  .cover-icon { width: 64px; height: 64px; border-radius: 18px; box-shadow: 0 18px 40px rgba(0,0,0,0.35); }
+  .cover-brand { font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
+  .cover-brand .accent { color: var(--sky-blue); }
+
+  .cover-center { margin-top: auto; margin-bottom: auto; position: relative; z-index: 2; }
+  .cover-kicker { text-transform: uppercase; letter-spacing: 0.32em; font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); }
+  .cover-title { font-size: 76px; line-height: 1.02; font-weight: 800; margin: 18px 0 10px; letter-spacing: -0.03em; }
+  .cover-title .accent { color: var(--sky-blue); }
+  .cover-tag { font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.92); letter-spacing: 0.06em; }
+  .cover-desc { margin-top: 22px; max-width: 52ch; font-size: 16px; color: rgba(255,255,255,0.78); line-height: 1.7; }
+
+  .cover-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .cover-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.16);
+    padding: 9px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #fff;
+  }
+  .cover-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sky-blue); }
+
+  .cover-foot { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: flex-end; color: rgba(255,255,255,0.7); font-size: 13px; }
+  .cover-foot strong { color: #fff; font-weight: 700; }
+
+  /* ============================================================
+     GENERIC BLOCKS
+     ============================================================ */
+  .grid { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .card {
+    background: var(--surface-white); border: 1px solid var(--outline-soft);
+    border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm);
+  }
+  .card.tint { background: var(--ice-bg); border-color: var(--surface-tint); }
+  .card h4 { margin-bottom: 6px; }
+  .card p { font-size: 14px; }
+
+  .icon-badge {
+    width: 38px; height: 38px; border-radius: 11px; background: var(--surface-tint);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 11px;
+    color: var(--primary-blue); font-size: 18px; font-weight: 800;
+  }
+
+  /* stat row */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 18px 0 4px; }
+  .stat { background: var(--grad-brand); color: #fff; border-radius: 16px; padding: 16px; box-shadow: var(--shadow-md); }
+  .stat .n { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+  .stat .l { font-size: 12px; opacity: 0.9; margin-top: 2px; }
+  .stat.ghost { background: var(--surface-white); color: var(--text-primary); border: 1px solid var(--outline-soft); box-shadow: var(--shadow-sm); }
+  .stat.ghost .l { color: var(--text-muted); opacity: 1; }
+
+  /* TOC */
+  .toc-list { list-style: none; margin-top: 8px; }
+  .toc-item { display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--outline-soft); }
+  .toc-item:last-child { border-bottom: 0; }
+  .toc-badge { width: 34px; height: 34px; border-radius: 10px; background: var(--surface-tint); color: var(--primary-blue); font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .toc-t { font-weight: 700; color: var(--text-primary); font-size: 16px; }
+  .toc-d { color: var(--text-muted); font-size: 13px; }
+  .toc-dots { flex: 1; border-bottom: 2px dotted var(--outline-soft); margin: 0 6px 6px; }
+  .toc-pg { color: var(--text-muted); font-weight: 700; font-size: 14px; }
+
+  /* color swatches */
+  .swatch { border-radius: 16px; overflow: hidden; border: 1px solid var(--outline-soft); box-shadow: var(--shadow-sm); }
+  .swatch .chip { height: 58px; }
+  .swatch .meta { padding: 12px 14px; background: #fff; }
+  .swatch .name { font-weight: 700; font-size: 13.5px; }
+  .swatch .hex { font-size: 12px; color: var(--text-muted); font-family: 'Consolas', monospace; letter-spacing: 0.03em; }
+
+  /* phone mockups */
+  .screens { display: grid; grid-template-columns: 178px 1fr; gap: 24px; align-items: center; margin-top: 2px; }
+  .screens.flip { grid-template-columns: 1fr 178px; }
+  .phone {
+    width: 178px; border-radius: 28px; padding: 8px;
+    background: linear-gradient(160deg, #0A1E4A, #1D4ED8);
+    box-shadow: var(--shadow-lg); position: relative;
+  }
+  .phone::before {
+    content: ""; position: absolute; top: 13px; left: 50%; transform: translateX(-50%);
+    width: 38px; height: 5px; border-radius: 999px; background: rgba(255,255,255,0.55); z-index: 3;
+  }
+  .phone img { width: 100%; display: block; border-radius: 21px; }
+  .screen-copy h3 { margin-bottom: 6px; }
+  .screen-copy .tag { margin-bottom: 10px; }
+  .feature-list { list-style: none; margin-top: 10px; }
+  .feature-list li { position: relative; padding-left: 26px; margin-bottom: 7px; color: var(--text-secondary); font-size: 13.5px; }
+  .feature-list li::before {
+    content: ""; position: absolute; left: 0; top: 7px; width: 14px; height: 14px; border-radius: 5px;
+    background: var(--surface-tint); box-shadow: inset 0 0 0 2px var(--primary-blue);
+  }
+  .tag {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700;
+    color: var(--primary-blue); background: var(--surface-tint); padding: 5px 11px; border-radius: 999px;
+  }
+
+  /* architecture flow */
+  .flow { display: flex; flex-direction: column; gap: 0; margin-top: 6px; }
+  .flow-node {
+    border: 1px solid var(--outline-soft); border-radius: 14px; padding: 12px 18px; background: #fff; box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .flow-node.brand { background: var(--grad-brand); color: #fff; border: 0; }
+  .flow-node.navy { background: var(--grad-navy); color: #fff; border: 0; }
+  .flow-node .fn-title { font-weight: 800; font-size: 16px; }
+  .flow-node .fn-desc { font-size: 13px; opacity: 0.92; }
+  .flow-node.brand .fn-desc, .flow-node.navy .fn-desc { color: rgba(255,255,255,0.85); }
+  .flow-node:not(.brand):not(.navy) .fn-desc { color: var(--text-muted); }
+  .flow-arrow { align-self: center; color: var(--primary-blue); font-size: 18px; padding: 3px 0; font-weight: 800; }
+  .fn-tag { margin-left: auto; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 5px 10px; border-radius: 999px; background: rgba(255,255,255,0.18); }
+  .flow-node:not(.brand):not(.navy) .fn-tag { background: var(--surface-tint); color: var(--primary-blue); }
+
+  /* code / tree */
+  pre.tree {
+    background: var(--deep-navy); color: #cfe0ff; border-radius: 14px; padding: 16px 20px;
+    font-family: 'Consolas', ui-monospace, monospace; font-size: 12px; line-height: 1.55; overflow: auto;
+    box-shadow: var(--shadow-md);
+  }
+  pre.tree .c { color: var(--sky-blue); }
+  pre.tree .k { color: #9fb6ff; }
+
+  /* table */
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
+  thead th { text-align: left; background: var(--deep-navy); color: #fff; padding: 12px 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+  thead th:first-child { border-radius: 12px 0 0 0; }
+  thead th:last-child { border-radius: 0 12px 0 0; }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--outline-soft); color: var(--text-secondary); vertical-align: top; }
+  tbody tr:nth-child(even) { background: var(--ice-bg); }
+  tbody td strong { color: var(--text-primary); }
+  td code, .inline-code { background: var(--surface-tint); color: var(--primary-blue-dark); padding: 2px 7px; border-radius: 6px; font-family: 'Consolas', monospace; font-size: 12.5px; }
+
+  /* callout */
+  .callout { display: flex; gap: 16px; border-radius: 16px; padding: 18px 20px; border: 1px solid var(--outline-soft); background: var(--ice-bg); }
+  .callout .co-icon { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; background: var(--grad-brand); }
+  .callout h4 { margin-bottom: 3px; }
+  .callout.ok { background: var(--success-surface); border-color: #bfe6cd; }
+  .callout.ok .co-icon { background: var(--success-green); }
+  .callout.ok h4 { color: var(--success-ink); }
+
+  /* run steps */
+  .steps { counter-reset: step; display: grid; gap: 14px; margin-top: 6px; }
+  .step { display: flex; gap: 16px; align-items: flex-start; }
+  .step .num { counter-increment: step; flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; background: var(--grad-brand); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .step .num::before { content: counter(step); }
+  .cmd { background: var(--deep-navy); color: #cfe0ff; font-family: 'Consolas', monospace; font-size: 13px; padding: 10px 14px; border-radius: 10px; display: inline-block; margin-top: 6px; }
+
+  /* footer band on content pages */
+  .page-foot { position: absolute; left: 20mm; right: 20mm; bottom: 12mm; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 11px; border-top: 1px solid var(--outline-soft); padding-top: 8px; }
+  .page-foot .fb-brand { font-weight: 800; color: var(--text-secondary); }
+  .page-foot .fb-brand span { color: var(--primary-blue); }
+
+  @media print {
+    body { background: #fff; }
+    .page { box-shadow: none; margin: 0; }
+  }
+  @media screen {
+    body { padding: 24px 0; }
+    .page { margin-bottom: 26px; box-shadow: var(--shadow-lg); border-radius: 4px; }
+  }
+  @page { size: A4; margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- ============================ COVER ============================ -->
+<section class="page cover">
+  <div class="cover-bubble b1"></div>
+  <div class="cover-bubble b2"></div>
+  <div class="cover-bubble b3"></div>
+  <div class="pad">
+    <div class="cover-top">
+      <img class="cover-icon" src="assets/screens/app_icon.png" alt="TrainInBlue icon" />
+      <div class="cover-brand">Train<span class="accent">In</span>Blue</div>
+    </div>
+
+    <div class="cover-center">
+      <div class="cover-kicker">Product Documentation</div>
+      <div class="cover-title">Train<span class="accent">In</span>Blue</div>
+      <div class="cover-tag">Build. Train. Resume.</div>
+      <p class="cover-desc">
+        An offline-first Flutter app for building, organizing, completing, and safely
+        resuming a single workout session. No backend, no account, no network — every
+        change is saved on the device and restored exactly where you left off.
+      </p>
+      <div class="cover-chips">
+        <span class="cover-chip"><span class="cover-dot"></span> Flutter &amp; Dart</span>
+        <span class="cover-chip"><span class="cover-dot"></span> Offline-first</span>
+        <span class="cover-chip"><span class="cover-dot"></span> Cubit architecture</span>
+        <span class="cover-chip"><span class="cover-dot"></span> Material 3</span>
+      </div>
+    </div>
+
+    <div class="cover-foot">
+      <div>Version <strong>1.0.0</strong> &nbsp;·&nbsp; iOS &amp; Android</div>
+      <div>Prepared <strong>Jul 2026</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TOC ============================ -->
+<section class="page">
+  <div class="pad">
+    <span class="eyebrow">Contents</span>
+    <h2 style="margin-top:14px;">Inside this document</h2>
+    <p class="section-sub">A guided tour of the product — from brand and design system to screens, architecture, and how to run it.</p>
+
+    <ul class="toc-list">
+      <li class="toc-item"><span class="toc-badge">01</span>
+        <div><div class="toc-t">Product overview</div><div class="toc-d">What TrainInBlue is and who it's for</div></div>
+        <span class="toc-dots"></span><span class="toc-pg">03</span></li>
+      <li class="toc-item"><span class="toc-badge">02</span>
+        <div><div class="toc-t">Design system</div><div class="toc-d">Color palette, typography, surfaces</div></div>
+        <span class="toc-dots"></span><span class="toc-pg">04</span></li>
+      <li class="toc-item"><span class="toc-badge">03</span>
+        <div><div class="toc-t">Screens &amp; flow</div><div class="toc-d">Splash, onboarding, home, detail, add exercise</div></div>
+        <span class="toc-dots"></span><span class="toc-pg">05</span></li>
+      <li class="toc-item"><span class="toc-badge">04</span>
+        <div><div class="toc-t">Architecture</div><div class="toc-d">Layered structure &amp; folder map</div></div>
+        <span class="toc-dots"></span><span class="toc-pg">08</span></li>
+      <li class="toc-item"><span class="toc-badge">05</span>
+        <div><div class="toc-t">State &amp; persistence</div><div class="toc-d">Cubits, versioned snapshot, recovery</div></div>
+        <span class="toc-dots"></span><span class="toc-pg">09</span></li>
+      <li class="toc-item"><span class="toc-badge">06</span>
+        <div><div class="toc-t">Tech stack</div><div class="toc-d">Dependencies &amp; the reason for each</div></div>
+        <span class="toc-dots"></span><span class="toc-pg">10</span></li>
+      <li class="toc-item"><span class="toc-badge">07</span>
+        <div><div class="toc-t">Testing &amp; quality</div><div class="toc-d">Unit, widget, and verification approach</div></div>
+        <span class="toc-dots"></span><span class="toc-pg">11</span></li>
+      <li class="toc-item"><span class="toc-badge">08</span>
+        <div><div class="toc-t">Getting started</div><div class="toc-d">Run from a clean checkout</div></div>
+        <span class="toc-dots"></span><span class="toc-pg">12</span></li>
+    </ul>
+  </div>
+  <div class="page-foot"><span class="fb-brand">Train<span>In</span>Blue</span><span>Product Documentation · v1.0.0</span></div>
+</section>
+
+<!-- ============================ 01 OVERVIEW ============================ -->
+<section class="page">
+  <div class="pad">
+    <div class="section-head"><span class="section-num">01</span><div><span class="eyebrow">Overview</span><h2 style="margin-top:8px;">One session, arranged your way</h2></div></div>
+    <p class="section-sub">
+      TrainInBlue ships with six starter exercises from bundled JSON. It saves every change on
+      the device and restores an unfinished session exactly after the app is closed and reopened.
+      Tap any exercise for a full detail experience — its own photo, key numbers, an interactive
+      set tracker or a countdown timer, coaching content, and complete / edit / delete actions.
+    </p>
+
+    <div class="stats">
+      <div class="stat"><div class="n">6</div><div class="l">Starter exercises</div></div>
+      <div class="stat ghost"><div class="n">0</div><div class="l">Backend services</div></div>
+      <div class="stat ghost"><div class="n">100%</div><div class="l">Offline-first</div></div>
+      <div class="stat"><div class="n">38</div><div class="l">Passing tests</div></div>
+    </div>
+
+    <hr class="rule" />
+
+    <h3 style="margin-bottom:16px;">What makes it different</h3>
+    <div class="grid grid-2">
+      <div class="card"><div class="icon-badge">◆</div><h4>Resumes exactly</h4><p>Order and completion are restored precisely after the app is closed — an unfinished session is ready when you return.</p></div>
+      <div class="card"><div class="icon-badge">◉</div><h4>Safe by design</h4><p>Every mutation is persisted atomically as one document. Corrupt data is never silently overwritten; you get an explicit recovery choice.</p></div>
+      <div class="card"><div class="icon-badge">▲</div><h4>Two target types</h4><p>Rep-based exercises get an interactive set tracker; duration exercises get a foreground countdown timer with its own ring.</p></div>
+      <div class="card"><div class="icon-badge">★</div><h4>One consistent brand</h4><p>Deep navy + cobalt <span class="inline-code">#2563EB</span> across every photo, icon and surface, so the app feels like one product.</p></div>
+    </div>
+  </div>
+  <div class="page-foot"><span class="fb-brand">Train<span>In</span>Blue</span><span>01 · Overview</span></div>
+</section>
+
+<!-- ============================ 02 DESIGN SYSTEM ============================ -->
+<section class="page">
+  <div class="pad">
+    <div class="section-head"><span class="section-num">02</span><div><span class="eyebrow">Design system</span><h2 style="margin-top:8px;">The TrainInBlue palette</h2></div></div>
+    <p class="section-sub">Every color in the app comes from a single palette (<span class="inline-code">AppColorPalette</span>) so the blue identity stays consistent and easy to adjust from one place.</p>
+
+    <h3 style="margin:6px 0 14px;">Brand blues</h3>
+    <div class="grid grid-4">
+      <div class="swatch"><div class="chip" style="background:#2563EB"></div><div class="meta"><div class="name">Primary Blue</div><div class="hex">#2563EB</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#1D4ED8"></div><div class="meta"><div class="name">Primary Dark</div><div class="hex">#1D4ED8</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#60A5FA"></div><div class="meta"><div class="name">Sky Blue</div><div class="hex">#60A5FA</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#0A1E4A"></div><div class="meta"><div class="name">Deep Navy</div><div class="hex">#0A1E4A</div></div></div>
+    </div>
+
+    <h3 style="margin:24px 0 14px;">Surfaces &amp; text</h3>
+    <div class="grid grid-4">
+      <div class="swatch"><div class="chip" style="background:#F2F6FD"></div><div class="meta"><div class="name">Ice Background</div><div class="hex">#F2F6FD</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#E7EEFB"></div><div class="meta"><div class="name">Surface Tint</div><div class="hex">#E7EEFB</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#DCE5F3"></div><div class="meta"><div class="name">Outline Soft</div><div class="hex">#DCE5F3</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#0F1F40"></div><div class="meta"><div class="name">Text Primary</div><div class="hex">#0F1F40</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#5B6B87"></div><div class="meta"><div class="name">Text Secondary</div><div class="hex">#5B6B87</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#8A97B1"></div><div class="meta"><div class="name">Text Muted</div><div class="hex">#8A97B1</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#16A34A"></div><div class="meta"><div class="name">Success</div><div class="hex">#16A34A</div></div></div>
+      <div class="swatch"><div class="chip" style="background:#DC2626"></div><div class="meta"><div class="name">Destructive</div><div class="hex">#DC2626</div></div></div>
+    </div>
+
+    <hr class="rule" />
+
+    <div class="grid grid-2" style="align-items:stretch;">
+      <div class="card">
+        <h4 style="font-size:18px;margin-bottom:10px;">Typography — Manrope</h4>
+        <div style="font-size:44px;font-weight:800;letter-spacing:-0.03em;line-height:1.05;">Aa</div>
+        <p style="margin-top:10px;">Weights 400–800 are bundled. Headlines use ExtraBold with tight tracking; body copy uses Regular/Medium for calm, legible reading.</p>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="tag" style="font-weight:400;">Regular 400</span>
+          <span class="tag" style="font-weight:500;">Medium 500</span>
+          <span class="tag" style="font-weight:600;">Semi 600</span>
+          <span class="tag" style="font-weight:800;">Extra 800</span>
+        </div>
+      </div>
+      <div class="card tint">
+        <h4 style="font-size:18px;margin-bottom:10px;">Gradients &amp; depth</h4>
+        <div style="height:52px;border-radius:12px;background:var(--grad-brand);box-shadow:var(--shadow-md);margin-bottom:10px;"></div>
+        <div style="height:52px;border-radius:12px;background:var(--grad-navy);"></div>
+        <p style="margin-top:12px;">The brand gradient (navy → cobalt → sky) powers heroes, primary actions and progress. Soft navy-tinted shadows give cards a premium, floating feel.</p>
+      </div>
+    </div>
+  </div>
+  <div class="page-foot"><span class="fb-brand">Train<span>In</span>Blue</span><span>02 · Design system</span></div>
+</section>
+
+<!-- ============================ 03 SCREENS (a) ============================ -->
+<section class="page">
+  <div class="pad">
+    <div class="section-head"><span class="section-num">03</span><div><span class="eyebrow">Screens &amp; flow</span><h2 style="margin-top:8px;">From launch to first rep</h2></div></div>
+    <p class="section-sub">A calm, photographic onboarding sets the tone before dropping you straight into your single, resumable session.</p>
+
+    <div class="screens">
+      <div class="phone"><img src="assets/screens/01_splash.png" alt="Splash screen" /></div>
+      <div class="screen-copy">
+        <span class="tag">◆ Splash</span>
+        <h3>A brand-first launch</h3>
+        <p>The animated splash centers the TrainInBlue mark over the signature navy gradient with soft floating orbs, then routes to onboarding or straight to the workout depending on saved state.</p>
+        <ul class="feature-list">
+          <li>Deep navy → cobalt gradient background</li>
+          <li>Brand mark with the “Build. Train. Resume.” tagline</li>
+          <li>Decides the entry route from persisted flags</li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="rule" />
+
+    <div class="screens flip">
+      <div class="screen-copy">
+        <span class="tag">◉ Onboarding</span>
+        <h3>Three photographic promises</h3>
+        <p>A short, swipeable intro explains the value in three frames — build, track progress, and resume. The final page confirms that your work stays on the device.</p>
+        <ul class="feature-list">
+          <li>Next / Back / Skip with a persisted completion flag</li>
+          <li>Dot page indicator and a clear final call-to-action</li>
+          <li>Consistent studio art direction across all photos</li>
+        </ul>
+      </div>
+      <div class="phone"><img src="assets/screens/02_onboarding.png" alt="Onboarding screen" /></div>
+    </div>
+  </div>
+  <div class="page-foot"><span class="fb-brand">Train<span>In</span>Blue</span><span>03 · Screens &amp; flow</span></div>
+</section>
+
+<!-- ============================ 03 SCREENS (b) ============================ -->
+<section class="page">
+  <div class="pad">
+    <div class="section-head"><span class="section-num">03</span><div><span class="eyebrow">Screens &amp; flow</span><h2 style="margin-top:8px;">Your session, at a glance</h2></div></div>
+    <p class="section-sub">The home screen is the single source of truth for the active workout — live progress up top, reorderable exercise cards below.</p>
+
+    <div class="screens">
+      <div class="phone"><img src="assets/screens/03_workout_home.png" alt="Workout home screen" /></div>
+      <div class="screen-copy">
+        <span class="tag">▤ Workout home</span>
+        <h3>Progress you can feel</h3>
+        <p>A photographic hero greets you by daypart and date. The progress card derives completed / total / remaining / percent in exactly one place, so every surface agrees.</p>
+        <ul class="feature-list">
+          <li>Live session progress ring and “remaining” count</li>
+          <li>Rich exercise cards with category, sets and reps</li>
+          <li>Drag handle to reorder · “Add exercise” quick action</li>
+          <li>Safe empty state renders a calm 0%</li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="rule" />
+
+    <div class="screens flip">
+      <div class="screen-copy">
+        <span class="tag">✓ Exercise detail</span>
+        <h3>Coaching for every move</h3>
+        <p>Each exercise opens to its own photo and key numbers. Rep exercises show a tap-to-complete set tracker; duration exercises show a foreground countdown. Coaching steps, tips and equipment sit below.</p>
+        <ul class="feature-list">
+          <li>Interactive set tracker — tap a set as you finish it</li>
+          <li>Hero stat strip: sets · reps/set · focus</li>
+          <li>Mark complete, edit, or delete from one place</li>
+        </ul>
+      </div>
+      <div class="phone"><img src="assets/screens/04_exercise_detail.png" alt="Exercise detail screen" /></div>
+    </div>
+  </div>
+  <div class="page-foot"><span class="fb-brand">Train<span>In</span>Blue</span><span>03 · Screens &amp; flow</span></div>
+</section>
+
+<!-- ============================ 03 SCREENS (c) ============================ -->
+<section class="page">
+  <div class="pad">
+    <div class="section-head"><span class="section-num">03</span><div><span class="eyebrow">Screens &amp; flow</span><h2 style="margin-top:8px;">Add anything, in seconds</h2></div></div>
+    <p class="section-sub">A focused form makes creating an exercise effortless — name it, pick a category (or add your own), choose a target, save it.</p>
+
+    <div class="screens">
+      <div class="phone"><img src="assets/screens/05_add_exercise.png" alt="Add exercise screen" /></div>
+      <div class="screen-copy">
+        <span class="tag">＋ Add exercise</span>
+        <h3>Name it, target it, save it</h3>
+        <p>A photographic header frames the task, then clearly-sectioned cards guide input. Required fields are badged, and the save bar stays disabled until the form is valid.</p>
+        <ul class="feature-list">
+          <li>Validated exercise name with inline hints</li>
+          <li>Quick-pick categories plus a custom option</li>
+          <li>Repetitions ↔ Duration target toggle</li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="rule" />
+
+    <div class="screens flip">
+      <div class="screen-copy">
+        <span class="tag">⚙ Target &amp; category</span>
+        <h3>Structured, forgiving input</h3>
+        <p>Categories are free text with quick-pick suggestions. Sets and the selected target are both required, so saved data is always complete and renderable.</p>
+        <ul class="feature-list">
+          <li>Legs · Chest · Back · Core · Cardio · Full Body · Custom</li>
+          <li>Sets + reps for rep exercises; sets + duration otherwise</li>
+          <li>Known exercises get a photo; others fall back gracefully</li>
+        </ul>
+      </div>
+      <div class="phone"><img src="assets/screens/06_add_form.png" alt="Add exercise form fields" /></div>
+    </div>
+  </div>
+  <div class="page-foot"><span class="fb-brand">Train<span>In</span>Blue</span><span>03 · Screens &amp; flow</span></div>
+</section>
+
+<!-- ============================ 04 ARCHITECTURE ============================ -->
+<section class="page">
+  <div class="pad">
+    <div class="section-head"><span class="section-num">04</span><div><span class="eyebrow">Architecture</span><h2 style="margin-top:8px;">One responsibility per layer</h2></div></div>
+    <p class="section-sub">Screens render state and dispatch intent, the cubit owns rules and persistence ordering, and repositories own storage details. Each concern lives in exactly one place.</p>
+
+    <div class="flow">
+      <div class="flow-node"><div><div class="fn-title">UI — screens / components / widgets</div><div class="fn-desc">Render state · dispatch intent</div></div><span class="fn-tag">Presentation</span></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node brand"><div><div class="fn-title">WorkoutCubit · OnboardingCubit · ThemeCubit</div><div class="fn-desc">Load · mutate · persist · derive progress</div></div><span class="fn-tag">State (Blocs/)</span></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node"><div><div class="fn-title">WorkoutRepository · OnboardingRepository</div><div class="fn-desc">Own storage details behind a small API</div></div><span class="fn-tag">Data</span></div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-node navy"><div><div class="fn-title">LocalStorageService (SharedPreferences)</div><div class="fn-desc">Source of truth · assets/data/exercises.json seeds first launch only</div></div><span class="fn-tag">Storage</span></div>
+    </div>
+
+    <hr class="rule" />
+
+    <h3 style="margin-bottom:12px;">Folder structure</h3>
+    <pre class="tree"><span class="c">lib/</span>
+  <span class="k">Blocs/</span>            <span class="c"># Cubits: workout session, onboarding flag, theme</span>
+  <span class="k">screens/</span>          <span class="c"># splash, onboarding, workout home, detail, form</span>
+  <span class="k">components/</span>        <span class="c"># reusable cards, buttons, Inputs, dialogs, progress</span>
+  <span class="k">widgets/</span>          <span class="c"># small shared widgets (status view, page dots)</span>
+  <span class="k">Core/</span>
+    constants/      <span class="c"># colors, strings, asset paths, widget keys</span>
+    services/       <span class="c"># LocalStorageService, NavigationService</span>
+    Utils/          <span class="c"># validators, duration formatter, id generator</span>
+    errors/         <span class="c"># readable application exceptions</span>
+  <span class="k">data/</span>
+    models/         <span class="c"># Exercise, drafts, snapshot, progress</span>
+    repositories/   <span class="c"># local workout + onboarding repositories</span>
+  <span class="k">app_theme/</span>        <span class="c"># Material 3 theme, typography, color extension</span></pre>
+  </div>
+  <div class="page-foot"><span class="fb-brand">Train<span>In</span>Blue</span><span>04 · Architecture</span></div>
+</section>
+
+<!-- ============================ 05 STATE & PERSISTENCE ============================ -->
+<section class="page">
+  <div class="pad">
+    <div class="section-head"><span class="section-num">05</span><div><span class="eyebrow">State &amp; persistence</span><h2 style="margin-top:8px;">Predictable state, durable data</h2></div></div>
+    <p class="section-sub">The app has one aggregate — the active workout — so a single cubit is the source of truth for loading, every mutation, persistence and error handling.</p>
+
+    <div class="grid grid-2">
+      <div class="card"><div class="icon-badge">◱</div><h4>Cubits, not full Blocs</h4><p>Explicit states — <span class="inline-code">loading</span>, <span class="inline-code">ready</span>, <span class="inline-code">empty</span>, <span class="inline-code">failure</span> — keep every UI situation intentional. Event modeling would add ceremony without value at this size.</p></div>
+      <div class="card"><div class="icon-badge">◲</div><h4>One versioned document</h4><p>The whole workout is stored as a single JSON snapshot (<span class="inline-code">schemaVersion</span>, <span class="inline-code">updatedAt</span>, exercises with order + completion) via <span class="inline-code">shared_preferences</span>.</p></div>
+      <div class="card"><div class="icon-badge">◳</div><h4>Atomic saves</h4><p>Whole-document writes after every successful mutation — a save either fully succeeds or the previous document stays intact.</p></div>
+      <div class="card"><div class="icon-badge">◰</div><h4>Never overwrite corruption</h4><p>Corrupt saved data is never silently replaced; the user gets an explicit recovery choice (try again / start empty).</p></div>
+    </div>
+
+    <div style="margin-top:20px;" class="callout ok">
+      <div class="co-icon">✓</div>
+      <div><h4>Single commit path</h4><p style="margin-top:2px;">Every mutation — including reset and start-empty — flows through one <span class="inline-code">_commitSession</span> method that stamps the version + timestamp and persists. Save-failure and retry behavior is uniform for free.</p></div>
+    </div>
+
+    <div style="margin-top:16px;" class="callout">
+      <div class="co-icon">⟲</div>
+      <div><h4>Celebration, once</h4><p style="margin-top:2px;">A one-shot flag fires the completion celebration only on the transition to 100%, and never repeats after a restart — pinned by unit tests.</p></div>
+    </div>
+  </div>
+  <div class="page-foot"><span class="fb-brand">Train<span>In</span>Blue</span><span>05 · State &amp; persistence</span></div>
+</section>
+
+<!-- ============================ 06 TECH STACK ============================ -->
+<section class="page">
+  <div class="pad">
+    <div class="section-head"><span class="section-num">06</span><div><span class="eyebrow">Tech stack</span><h2 style="margin-top:8px;">Dependencies, and why</h2></div></div>
+    <p class="section-sub">A deliberately small set of well-understood packages. Every dependency earns its place.</p>
+
+    <table>
+      <thead><tr><th>Package</th><th>Role in TrainInBlue</th></tr></thead>
+      <tbody>
+        <tr><td><strong>flutter_bloc</strong></td><td>Cubit state management; one source of truth with testable mutations.</td></tr>
+        <tr><td><strong>equatable</strong></td><td>Value equality for states and models → predictable rebuilds.</td></tr>
+        <tr><td><strong>shared_preferences</strong></td><td>Tiny, reliable key-value store for the single JSON snapshot.</td></tr>
+        <tr><td><strong>flutter_screenutil</strong></td><td>Responsive sizing against the 390×844 design canvas.</td></tr>
+        <tr><td><strong>cupertino_icons</strong></td><td>Default iOS-style icon set.</td></tr>
+        <tr><td><strong>flutter_launcher_icons</strong> <span class="muted">(dev)</span></td><td>Generates Android/iOS launcher icons from the brand mark.</td></tr>
+        <tr><td><strong>flutter_lints</strong> <span class="muted">(dev)</span></td><td>Recommended lint set enforced by <span class="inline-code">flutter analyze</span>.</td></tr>
+      </tbody>
+    </table>
+
+    <hr class="rule" />
+
+    <h3 style="margin-bottom:12px;">Platform &amp; requirements</h3>
+    <div class="grid grid-3">
+      <div class="card tint"><div class="icon-badge">⌘</div><h4>Flutter 3.41.x</h4><p>Stable channel with Dart 3.11 — verify with <span class="inline-code">flutter --version</span>.</p></div>
+      <div class="card tint"><div class="icon-badge">▧</div><h4>iOS &amp; Android</h4><p>Runs on a simulator, emulator, or a physical device. No network required.</p></div>
+      <div class="card tint"><div class="icon-badge">Aa</div><h4>Manrope font</h4><p>Bundled weights 400–800 for a consistent, crisp type system.</p></div>
+    </div>
+  </div>
+  <div class="page-foot"><span class="fb-brand">Train<span>In</span>Blue</span><span>06 · Tech stack</span></div>
+</section>
+
+<!-- ============================ 07 TESTING ============================ -->
+<section class="page">
+  <div class="pad">
+    <div class="section-head"><span class="section-num">07</span><div><span class="eyebrow">Testing &amp; quality</span><h2 style="margin-top:8px;">Behavior pinned by tests</h2></div></div>
+    <p class="section-sub"><span class="inline-code">dart format</span>, <span class="inline-code">flutter analyze</span> (zero issues) and <span class="inline-code">flutter test</span> (38 tests) were run after each significant step — not only at the end.</p>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h4 style="font-size:17px;margin-bottom:10px;">Unit tests</h4>
+        <ul class="feature-list" style="margin-top:0;">
+          <li>Progress: empty / partial / complete / rounding</li>
+          <li>JSON round-trips + invalid-data rejection</li>
+          <li>Every cubit mutation incl. persistence</li>
+          <li>Save-failure retry &amp; recovery paths</li>
+          <li>Celebration one-shot; corrupt-data protection</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 style="font-size:17px;margin-bottom:10px;">Widget tests</h4>
+        <ul class="feature-list" style="margin-top:0;">
+          <li>Onboarding navigation with persisted completion</li>
+          <li>Complete / reopen updates progress + persists</li>
+          <li>Detail flow: set tracker counts, timer runs to zero</li>
+          <li>Delete-from-detail returns home</li>
+          <li>Empty state shows a safe 0%</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;" class="callout">
+      <div class="co-icon">▦</div>
+      <div><h4>Deterministic by construction</h4><p style="margin-top:2px;">Fakes replace device storage (<span class="inline-code">FakeWorkoutRepository</span>, <span class="inline-code">SharedPreferences.setMockInitialValues</span>); an injectable clock and ID generator keep every test stable and repeatable.</p></div>
+    </div>
+
+    <div class="stats" style="grid-template-columns:repeat(3,1fr);">
+      <div class="stat"><div class="n">38</div><div class="l">Tests passing</div></div>
+      <div class="stat ghost"><div class="n">0</div><div class="l">Analyzer issues</div></div>
+      <div class="stat ghost"><div class="n">≤150</div><div class="l">Lines per file</div></div>
+    </div>
+  </div>
+  <div class="page-foot"><span class="fb-brand">Train<span>In</span>Blue</span><span>07 · Testing &amp; quality</span></div>
+</section>
+
+<!-- ============================ 08 GETTING STARTED ============================ -->
+<section class="page">
+  <div class="pad">
+    <div class="section-head"><span class="section-num">08</span><div><span class="eyebrow">Getting started</span><h2 style="margin-top:8px;">Run from a clean checkout</h2></div></div>
+    <p class="section-sub">Two commands to a running app. No environment variables, no accounts, no services to stand up.</p>
+
+    <div class="steps">
+      <div class="step"><div class="num"></div><div><h4>Fetch dependencies</h4><span class="cmd">flutter pub get</span></div></div>
+      <div class="step"><div class="num"></div><div><h4>Launch on your device or simulator</h4><span class="cmd">flutter run</span></div></div>
+    </div>
+
+    <hr class="rule" />
+
+    <h3 style="margin-bottom:12px;">Useful commands</h3>
+    <table>
+      <thead><tr><th>Task</th><th>Command</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Run the app</strong></td><td><span class="inline-code">flutter run</span></td></tr>
+        <tr><td><strong>Format</strong></td><td><span class="inline-code">dart format lib test</span></td></tr>
+        <tr><td><strong>Analyze</strong></td><td><span class="inline-code">flutter analyze</span></td></tr>
+        <tr><td><strong>Tests</strong></td><td><span class="inline-code">flutter test</span></td></tr>
+        <tr><td><strong>Regenerate launcher icons</strong></td><td><span class="inline-code">dart run flutter_launcher_icons</span></td></tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:26px;background:var(--grad-navy);border-radius:var(--radius);padding:26px 28px;color:#fff;box-shadow:var(--shadow-md);position:relative;overflow:hidden;">
+      <div style="position:absolute;width:220px;height:220px;border-radius:50%;background:rgba(96,165,250,0.16);top:-70px;right:-40px;"></div>
+      <div style="position:relative;z-index:2;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <img src="assets/screens/app_icon.png" alt="" style="width:44px;height:44px;border-radius:12px;" />
+          <div style="font-weight:800;font-size:20px;">Train<span style="color:var(--sky-blue)">In</span>Blue</div>
+        </div>
+        <p style="color:rgba(255,255,255,0.85);margin-top:14px;max-width:60ch;">Build. Train. Resume. — an offline-first workout builder that keeps a single session ready for you, every time you come back.</p>
+        <div style="margin-top:16px;font-size:13px;color:rgba(255,255,255,0.6);">Version 1.0.0 · iOS &amp; Android · Product Documentation</div>
+      </div>
+    </div>
+  </div>
+  <div class="page-foot"><span class="fb-brand">Train<span>In</span>Blue</span><span>08 · Getting started</span></div>
+</section>
+
+</body>
+</html>

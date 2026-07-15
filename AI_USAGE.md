@@ -1,5 +1,7 @@
 # AI Usage
 
+**Product backlog:** [TrainInBlue on Notion](https://app.notion.com/p/TrainInBlue-39db443b5c8080438b2efe2be296f1fd?source=copy_link)
+
 ## Tools used and where they helped
 
 - **Cursor (agent mode, Claude-family model)** — primary tool. Used to:
