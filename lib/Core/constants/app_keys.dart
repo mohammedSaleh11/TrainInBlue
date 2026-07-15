@@ -43,6 +43,7 @@ class AppKeys {
   static const Key detailCompleteButton = Key('detail_complete_button');
   static const Key timerToggleButton = Key('timer_toggle_button');
   static const Key timerRestartButton = Key('timer_restart_button');
+  static const Key timerNextSetButton = Key('timer_next_set_button');
 
   static Key setDot(int index) => Key('set_dot_$index');
 }

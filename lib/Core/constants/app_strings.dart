@@ -34,7 +34,8 @@ class AppStrings {
   static const String goodMorning = 'Good morning';
   static const String goodAfternoon = 'Good afternoon';
   static const String goodEvening = 'Good evening';
-  static const String exercisesSectionTitle = 'Today\'s exercises';
+  static String exerciseCountLabel(int count) =>
+      count == 1 ? '1 exercise' : '$count exercises';
   static const String motivationNotStarted =
       'Ready when you are — first one sets the tone.';
   static const String motivationInProgress = 'Great pace. Keep it rolling!';
@@ -69,14 +70,23 @@ class AppStrings {
   // Exercise form.
   static const String addExerciseTitle = 'Add exercise';
   static const String editExerciseTitle = 'Edit exercise';
+  static const String formHeroSubtitle = 'Name it, target it, save it.';
   static const String nameLabel = 'Exercise name';
   static const String nameHint = 'e.g. Goblet Squat';
   static const String categoryLabel = 'Category';
-  static const String categoryHint = 'e.g. Legs';
+  static const String categoryHint = 'e.g. Shoulders';
+  static const String categoryCustom = 'Custom';
+  static const String categoryPickHint = 'Choose one, or add your own.';
   static const String targetTypeLabel = 'Target';
-  static const String repetitionsLabel = 'Repetitions per set';
-  static const String durationLabel = 'Duration per set (seconds)';
+  static const String repetitionsLabel = 'Reps';
+  static const String durationLabel = 'Seconds';
   static const String setsLabel = 'Sets';
+  static const String setsHint = 'e.g. 3';
+  static const String repetitionsHint = 'e.g. 10';
+  static const String durationHint = 'e.g. 45';
+  static const String requiredBadge = 'Required';
+  static const String targetFieldsHint =
+      'Sets and the selected target are both required.';
   static const String saveExercise = 'Save exercise';
 
   // Dialogs.
@@ -110,6 +120,18 @@ class AppStrings {
   static const String reopenExercise = 'Reopen exercise';
   static const String edit = 'Edit';
   static const String reorderHint = 'Drag to reorder';
+  static const String exerciseActionsTooltip = 'Exercise actions';
+
+  static String exerciseSetsLabel(int sets) =>
+      sets == 1 ? '1 set' : '$sets sets';
+
+  static String exerciseRepsLabel(int reps) =>
+      reps == 1 ? '1 rep each' : '$reps reps each';
+
+  static String exerciseMetaLabel({
+    required String setsLabel,
+    required String targetLabel,
+  }) => '$setsLabel  ·  $targetLabel';
 
   // Exercise detail.
   static const String howToPerform = 'How to perform';
@@ -125,7 +147,28 @@ class AppStrings {
   static const String timerResume = 'Resume';
   static const String timerRestart = 'Restart';
   static const String timerDone = 'Time! Set complete.';
+  static const String timerNextSet = 'Next set';
+  static const String timerFinishLastSet = 'Finish last set';
+  static const String timerRemainingLabel = 'Remaining';
 
-  static String setsTrackedLabel(int done, int total) => '$done of $total sets';
+  static String timerSetLabel(int current, int total) {
+    if (total <= 0) return 'No sets';
+    if (current > total) return 'All $total sets done';
+    return 'Set $current of $total';
+  }
+
+  static String setsTrackedLabel(int done, int total) {
+    if (total <= 0) {
+      return 'No sets';
+    }
+    if (done <= 0) {
+      return 'Ready · $total sets';
+    }
+    if (done >= total) {
+      return 'All $total sets done';
+    }
+    return '$done of $total sets';
+  }
+
   static String perSetLabel(String target) => '$target per set';
 }

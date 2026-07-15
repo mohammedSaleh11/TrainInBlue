@@ -15,7 +15,7 @@ class ExerciseDraftValidator {
   static String? validateName(String? value) {
     final String text = value?.trim() ?? '';
     if (text.isEmpty) {
-      return 'Give the exercise a name.';
+      return 'Add a name for this exercise.';
     }
     if (text.length > maxNameLength) {
       return 'Keep the name under $maxNameLength characters.';
@@ -26,7 +26,7 @@ class ExerciseDraftValidator {
   static String? validateCategory(String? value) {
     final String text = value?.trim() ?? '';
     if (text.isEmpty) {
-      return 'Choose or type a category.';
+      return 'Pick a category to continue.';
     }
     return null;
   }

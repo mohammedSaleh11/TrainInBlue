@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../Core/constants/app_keys.dart';
-import '../../Core/constants/app_strings.dart';
-import '../../app_theme/theme_extension.dart';
+import '../../Core/constants/colors.dart';
+import 'confirm_dialog_card.dart';
 
 /// Confirmation dialog for destructive actions (delete, reset).
 ///
@@ -13,29 +13,21 @@ Future<bool> showConfirmDialog(
   required String title,
   required String message,
   required String confirmLabel,
+  IconData icon = Icons.delete_outline_rounded,
 }) async {
   final bool? confirmed = await showDialog<bool>(
     context: context,
+    barrierColor: AppColorPalette.deepNavy.withValues(alpha: 0.55),
     builder: (BuildContext dialogContext) {
-      final CustomColors colors = Theme.of(
-        dialogContext,
-      ).extension<CustomColors>()!;
-      return AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            key: AppKeys.confirmDialogCancel,
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text(AppStrings.cancel),
-          ),
-          FilledButton(
-            key: AppKeys.confirmDialogConfirm,
-            style: FilledButton.styleFrom(backgroundColor: colors.destructive),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(confirmLabel),
-          ),
-        ],
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.symmetric(horizontal: 28.w),
+        child: ConfirmDialogCard(
+          title: title,
+          message: message,
+          confirmLabel: confirmLabel,
+          icon: icon,
+        ),
       );
     },
   );

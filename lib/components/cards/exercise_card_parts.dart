@@ -1,215 +1,122 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../Core/constants/app_keys.dart';
-import '../../Core/constants/app_strings.dart';
 import '../../Core/constants/colors.dart';
-import '../../app_theme/theme_extension.dart';
 import '../../data/models/exercise.dart';
-import '../../widgets/exercise_image.dart';
+import '../../data/models/exercise_target_type.dart';
+import '../../widgets/exercise_image_hero.dart';
+import 'exercise_card_controls.dart';
 
-/// Minimal completion ring — tap to mark done or reopen.
-class ExerciseCompletionRing extends StatelessWidget {
-  const ExerciseCompletionRing({
+/// Quiet editorial hero — photography first, restrained typography.
+class ExerciseCardHero extends StatelessWidget {
+  const ExerciseCardHero({
     super.key,
     required this.exercise,
-    required this.onPressed,
+    required this.title,
+    required this.category,
+    required this.metaLabel,
+    required this.onToggleCompletion,
+    required this.actions,
   });
 
   final Exercise exercise;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final CustomColors colors = Theme.of(context).extension<CustomColors>()!;
-    final bool done = exercise.isCompleted;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        key: AppKeys.completeToggle(exercise.id),
-        onTap: onPressed,
-        customBorder: const CircleBorder(),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 32.r,
-          height: 32.r,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: done ? colors.successSurface : AppColorPalette.surfaceTintBlue,
-            border: Border.all(
-              width: 1.5,
-              color: done ? colors.success : AppColorPalette.outlineSoft,
-            ),
-          ),
-          child: done
-              ? Icon(Icons.check_rounded, size: 18.r, color: colors.success)
-              : Icon(
-                  Icons.circle_outlined,
-                  size: 18.r,
-                  color: AppColorPalette.textMuted,
-                ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Rounded exercise photo with a soft shadow.
-class ExerciseCardPhoto extends StatelessWidget {
-  const ExerciseCardPhoto({super.key, required this.exercise});
-
-  final Exercise exercise;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool done = exercise.isCompleted;
-
-    return Hero(
-      tag: 'exercise-image-${exercise.id}',
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20.r),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: AppColorPalette.deepNavy.withValues(alpha: 0.1),
-              blurRadius: 18.r,
-              offset: Offset(0, 6.h),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20.r),
-          child: SizedBox(
-            width: 102.w,
-            height: 102.w,
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                ExerciseImage(
-                  name: exercise.name,
-                  category: exercise.category,
-                  expand: true,
-                ),
-                if (done)
-                  ColoredBox(
-                    color: AppColorPalette.surfaceWhite.withValues(alpha: 0.38),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Category pill under the title block.
-class ExerciseCategoryTag extends StatelessWidget {
-  const ExerciseCategoryTag({super.key, required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsetsDirectional.symmetric(horizontal: 10.w, vertical: 5.h),
-      decoration: BoxDecoration(
-        color: AppColorPalette.surfaceTintBlue,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: AppColorPalette.primaryBlueDark,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-/// One readable stat row — icon plus full label, wraps naturally.
-class ExerciseStatLine extends StatelessWidget {
-  const ExerciseStatLine({
-    super.key,
-    required this.icon,
-    required this.label,
-  });
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsetsDirectional.only(top: 1.h),
-          child: Icon(icon, size: 16.r, color: AppColorPalette.primaryBlue),
-        ),
-        SizedBox(width: 8.w),
-        Expanded(
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColorPalette.textSecondary,
-              height: 1.35,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Set progress for repetition exercises on list cards.
-class ExerciseSetProgress extends StatelessWidget {
-  const ExerciseSetProgress({
-    super.key,
-    required this.completedSets,
-    required this.totalSets,
-  });
-
-  final int completedSets;
-  final int totalSets;
+  final String title;
+  final String category;
+  final String metaLabel;
+  final VoidCallback onToggleCompletion;
+  final Widget actions;
 
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
-    final bool allDone = completedSets >= totalSets;
-    final double progress = totalSets == 0
-        ? 0
-        : (completedSets / totalSets).clamp(0, 1);
+    final bool showProgress =
+        exercise.targetType == ExerciseTargetType.repetitions;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        SizedBox(height: 10.h),
-        Text(
-          AppStrings.setsTrackedLabel(completedSets, totalSets),
-          style: textTheme.labelMedium?.copyWith(
-            color: allDone
-                ? AppColorPalette.successGreen
-                : AppColorPalette.primaryBlueDark,
-            fontWeight: FontWeight.w700,
+    return SizedBox(
+      height: 236.h,
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          ExerciseImageHero(
+            exerciseId: exercise.id,
+            name: exercise.name,
+            category: exercise.category,
+            borderRadius: BorderRadius.circular(22.r),
           ),
-        ),
-        SizedBox(height: 6.h),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 5.h,
-            backgroundColor: AppColorPalette.surfaceTintBlue,
-            color: allDone
-                ? AppColorPalette.successGreen
-                : AppColorPalette.primaryBlue,
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: <Color>[
+                  Color(0x660A1E4A),
+                  Color(0x140A1E4A),
+                  Color(0xCC0A1E4A),
+                  Color(0xF50A1E4A),
+                ],
+                stops: <double>[0, 0.38, 0.72, 1],
+              ),
+            ),
           ),
-        ),
-      ],
+          Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(20.w, 14.h, 12.w, 18.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    const Spacer(),
+                    ExerciseCompletionRing(
+                      exercise: exercise,
+                      onPressed: onToggleCompletion,
+                    ),
+                    SizedBox(width: 2.w),
+                    actions,
+                  ],
+                ),
+                const Spacer(),
+                ExerciseCategoryBadge(label: category),
+                SizedBox(height: 10.h),
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.headlineMedium?.copyWith(
+                    color: AppColorPalette.textOnDark,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.4,
+                    height: 1.05,
+                    shadows: const <Shadow>[
+                      Shadow(
+                        color: Color(0x660A1E4A),
+                        blurRadius: 12,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 6.h),
+                Text(
+                  metaLabel,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColorPalette.textOnDark.withValues(alpha: 0.88),
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.2,
+                    height: 1.3,
+                  ),
+                ),
+                if (showProgress) ...<Widget>[
+                  SizedBox(height: 14.h),
+                  ExerciseSetProgress(
+                    completedSets: exercise.completedSets,
+                    totalSets: exercise.sets,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

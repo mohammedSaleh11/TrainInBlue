@@ -16,6 +16,7 @@ class AppAssets {
   static const String workoutHero = 'assets/images/workout_hero.png';
   static const String emptyWorkout = 'assets/images/empty_workout.png';
   static const String celebration = 'assets/images/celebration.png';
+  static const String exerciseFormHero = 'assets/images/exercise_form_hero.png';
 
   static const String _categoryFolder = 'assets/images/categories';
 

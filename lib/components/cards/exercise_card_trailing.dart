@@ -7,7 +7,41 @@ import '../../Core/constants/colors.dart';
 import '../../app_theme/theme_extension.dart';
 import '../../data/models/exercise.dart';
 
-/// Edit/delete overflow menu for a single exercise card.
+/// Whisper-quiet menu + drag — no glass capsule.
+class ExerciseCardHeroActions extends StatelessWidget {
+  const ExerciseCardHeroActions({
+    super.key,
+    required this.exercise,
+    required this.reorderIndex,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final Exercise exercise;
+  final int reorderIndex;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        ExerciseActionsMenu(
+          exercise: exercise,
+          onEdit: onEdit,
+          onDelete: onDelete,
+        ),
+        ExerciseCardDragHandle(
+          exercise: exercise,
+          reorderIndex: reorderIndex,
+        ),
+      ],
+    );
+  }
+}
+
+/// Edit/delete overflow — low-contrast icon on media.
 class ExerciseActionsMenu extends StatelessWidget {
   const ExerciseActionsMenu({
     super.key,
@@ -25,13 +59,17 @@ class ExerciseActionsMenu extends StatelessWidget {
     final CustomColors colors = Theme.of(context).extension<CustomColors>()!;
     return PopupMenuButton<String>(
       key: AppKeys.exerciseMenu(exercise.id),
-      tooltip: 'Exercise actions',
+      tooltip: AppStrings.exerciseActionsTooltip,
       padding: EdgeInsets.zero,
-      constraints: BoxConstraints.tightFor(width: 32.w, height: 32.w),
-      icon: Icon(
-        Icons.more_horiz_rounded,
-        size: 22.r,
-        color: AppColorPalette.textMuted,
+      offset: Offset(0, 8.h),
+      child: SizedBox(
+        width: 32.w,
+        height: 32.w,
+        child: Icon(
+          Icons.more_horiz_rounded,
+          size: 22.r,
+          color: AppColorPalette.textOnDark.withValues(alpha: 0.92),
+        ),
       ),
       onSelected: (String action) {
         if (action == 'edit') {
@@ -57,7 +95,7 @@ class ExerciseActionsMenu extends StatelessWidget {
   }
 }
 
-/// Subtle drag affordance along the card bottom edge.
+/// Soft drag grip — present but not loud.
 class ExerciseCardDragHandle extends StatelessWidget {
   const ExerciseCardDragHandle({
     super.key,
@@ -75,32 +113,16 @@ class ExerciseCardDragHandle extends StatelessWidget {
       index: reorderIndex,
       child: Semantics(
         label: AppStrings.reorderHint,
-        child: Container(
-          padding: EdgeInsetsDirectional.symmetric(
-            horizontal: 10.w,
-            vertical: 6.h,
-          ),
-          decoration: BoxDecoration(
-            color: AppColorPalette.surfaceTintBlue.withValues(alpha: 0.65),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Icon(
-                Icons.drag_indicator_rounded,
-                size: 18.r,
-                color: AppColorPalette.textMuted,
-              ),
-              SizedBox(width: 4.w),
-              Text(
-                AppStrings.reorderHint,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColorPalette.textMuted,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+        child: Tooltip(
+          message: AppStrings.reorderHint,
+          child: SizedBox(
+            width: 30.w,
+            height: 32.w,
+            child: Icon(
+              Icons.drag_indicator_rounded,
+              size: 20.r,
+              color: AppColorPalette.textOnDark.withValues(alpha: 0.82),
+            ),
           ),
         ),
       ),

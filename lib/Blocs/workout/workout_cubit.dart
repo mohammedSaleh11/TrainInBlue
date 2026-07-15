@@ -160,9 +160,13 @@ class WorkoutCubit extends Cubit<WorkoutState> {
   Future<void> _persistCurrent(List<Exercise> exercises) async {
     try {
       await _repository.saveWorkout(exercises);
-      _emitSafely(state.copyWith(hasPendingSaveFailure: false));
+      if (state.hasPendingSaveFailure) {
+        _emitSafely(state.copyWith(hasPendingSaveFailure: false));
+      }
     } on AppException {
-      _emitSafely(state.copyWith(hasPendingSaveFailure: true));
+      if (!state.hasPendingSaveFailure) {
+        _emitSafely(state.copyWith(hasPendingSaveFailure: true));
+      }
     }
   }
 

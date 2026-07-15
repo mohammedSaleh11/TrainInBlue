@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,6 +8,7 @@ import 'Blocs/onboarding/onboarding_cubit.dart';
 import 'Blocs/theme/theme_cubit.dart';
 import 'Blocs/workout/workout_cubit.dart';
 import 'Core/constants/app_strings.dart';
+import 'Core/constants/colors.dart';
 import 'Core/services/local_storage_service.dart';
 import 'Core/services/navigation_service.dart';
 import 'data/repositories/onboarding_repository.dart';
@@ -15,6 +17,17 @@ import 'screens/splash/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+    DeviceOrientation.portraitUp,
+  ]);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: AppColorPalette.iceBackground,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
   final SharedPreferences preferences = await SharedPreferences.getInstance();
   runApp(TrainInBlueApp(storage: LocalStorageService(preferences)));
 }
@@ -55,6 +68,8 @@ class TrainInBlueApp extends StatelessWidget {
           designSize: const Size(390, 844),
           minTextAdapt: true,
           builder: (_, _) => BlocBuilder<ThemeCubit, ThemeData>(
+            buildWhen: (ThemeData previous, ThemeData current) =>
+                previous != current,
             builder: (BuildContext context, ThemeData theme) {
               return MaterialApp(
                 title: AppStrings.appName,

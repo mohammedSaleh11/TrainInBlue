@@ -18,6 +18,34 @@ class NavigationService {
     return navigator.push<T>(MaterialPageRoute<T>(builder: (_) => page));
   }
 
+  /// Fade-only push so a [Hero] can carry the visual weight without fighting
+  /// a platform slide transition.
+  static Future<T?> pushFade<T>(Widget page, {BuildContext? context}) {
+    final NavigatorState navigator = context != null
+        ? Navigator.of(context)
+        : _navigator;
+    return navigator.push<T>(
+      PageRouteBuilder<T>(
+        pageBuilder: (BuildContext context, Animation<double> animation,
+                Animation<double> secondaryAnimation) =>
+            page,
+        transitionDuration: const Duration(milliseconds: 420),
+        reverseTransitionDuration: const Duration(milliseconds: 360),
+        transitionsBuilder: (BuildContext context, Animation<double> animation,
+            Animation<double> secondaryAnimation, Widget child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+              reverseCurve: Curves.easeInCubic,
+            ),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
   static Future<T?> pushReplacement<T>(Widget page, {BuildContext? context}) {
     final NavigatorState navigator = context != null
         ? Navigator.of(context)

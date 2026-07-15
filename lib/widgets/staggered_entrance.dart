@@ -5,15 +5,22 @@ import 'package:flutter/material.dart';
 ///
 /// The delay is baked into the animation curve (no timers), so tests and
 /// rebuilds stay deterministic.
+///
+/// Pass [remountKey] for items that briefly leave the tree (e.g. reorderable
+/// list rows) so the entrance does not replay after a remount.
 class StaggeredEntrance extends StatefulWidget {
   const StaggeredEntrance({
     super.key,
     required this.child,
     this.delay = Duration.zero,
+    this.remountKey,
   });
 
   final Widget child;
   final Duration delay;
+
+  /// Stable identity used to skip a second entrance after remount.
+  final Object? remountKey;
 
   /// Stagger step for the item at [index], capped so long lists never make
   /// late items wait noticeably.
@@ -32,6 +39,7 @@ class StaggeredEntrance extends StatefulWidget {
 class _StaggeredEntranceState extends State<StaggeredEntrance>
     with SingleTickerProviderStateMixin {
   static const int _revealMs = 320;
+  static final Set<Object> _playedKeys = <Object>{};
 
   late final AnimationController _controller;
   late final CurvedAnimation _progress;
@@ -39,10 +47,14 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
   @override
   void initState() {
     super.initState();
+    final Object? remountKey = widget.remountKey;
+    final bool alreadyPlayed =
+        remountKey != null && _playedKeys.contains(remountKey);
     final int totalMs = widget.delay.inMilliseconds + _revealMs;
     _controller = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: totalMs),
+      value: alreadyPlayed ? 1 : 0,
     );
     _progress = CurvedAnimation(
       parent: _controller,
@@ -52,7 +64,14 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
         curve: Curves.easeOutCubic,
       ),
     );
-    _controller.forward();
+    if (!alreadyPlayed) {
+      // Record immediately so a mid-animation remount (reorder drag) skips
+      // replaying the fade instead of flashing.
+      if (remountKey != null) {
+        _playedKeys.add(remountKey);
+      }
+      _controller.forward();
+    }
   }
 
   @override
