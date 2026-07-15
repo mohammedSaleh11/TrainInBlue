@@ -10,38 +10,29 @@ import '../../Core/constants/exercise_guides.dart';
 import '../../Core/services/navigation_service.dart';
 import '../../components/dialogs/confirm_dialog.dart';
 import '../../data/models/exercise.dart';
-import '../../data/models/exercise_target_type.dart';
 import '../../widgets/staggered_entrance.dart';
 import '../exercise_form/exercise_form_screen.dart';
 import 'components/detail_complete_bar.dart';
 import 'components/detail_hero.dart';
-import 'components/duration_timer_card.dart';
-import 'components/exercise_stat_strip.dart';
+import 'components/detail_tool_section.dart';
 import 'components/guide_sections.dart';
-import 'components/set_tracker_card.dart';
 
-/// The full experience for a single exercise: hero photo, overlapping stats,
-/// interactive training tools, coaching panels, and a pinned complete action.
-class ExerciseDetailScreen extends StatefulWidget {
+/// Single-exercise experience. The scaffold itself has no bloc subscription;
+/// each section selects only the fields it needs so set tracking never
+/// rebuilds the guide or hero chrome.
+class ExerciseDetailScreen extends StatelessWidget {
   const ExerciseDetailScreen({super.key, required this.exerciseId});
 
   final String exerciseId;
 
-  @override
-  State<ExerciseDetailScreen> createState() => _ExerciseDetailScreenState();
-}
-
-class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
-  Exercise? _cached;
-
-  void _openEdit(Exercise exercise) {
+  void _openEdit(BuildContext context, Exercise exercise) {
     NavigationService.push(
       ExerciseFormScreen(exerciseToEdit: exercise),
       context: context,
     );
   }
 
-  Future<void> _confirmDelete(Exercise exercise) async {
+  Future<void> _confirmDelete(BuildContext context, Exercise exercise) async {
     final WorkoutCubit cubit = context.read<WorkoutCubit>();
     final bool confirmed = await showConfirmDialog(
       context,
@@ -49,89 +40,71 @@ class _ExerciseDetailScreenState extends State<ExerciseDetailScreen> {
       message: AppStrings.deleteExerciseMessage,
       confirmLabel: AppStrings.delete,
     );
-    if (!confirmed || !mounted) {
-      return;
-    }
+    if (!confirmed || !context.mounted) return;
     NavigationService.pop(null, context);
     await cubit.deleteExercise(exercise.id);
   }
 
-  Widget _interactiveCard(Exercise exercise) {
-    if (exercise.targetType == ExerciseTargetType.repetitions) {
-      return SetTrackerCard(
-        key: ValueKey<String>(
-          'tracker-${exercise.id}-${exercise.sets}-${exercise.completedSets}',
-        ),
-        exerciseId: exercise.id,
-        sets: exercise.sets,
-        completedSets: exercise.completedSets,
-      );
-    }
-    return DurationTimerCard(
-      key: ValueKey<String>('timer-${exercise.id}-${exercise.durationSeconds}'),
-      durationSeconds: exercise.durationSeconds ?? 0,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<WorkoutCubit, WorkoutState>(
-      builder: (BuildContext context, WorkoutState state) {
-        final Exercise? current = state.exerciseById(widget.exerciseId);
-        if (current != null) {
-          _cached = current;
-        }
-        final Exercise? exercise = current ?? _cached;
-        if (exercise == null) {
-          return const Scaffold(body: SizedBox.shrink());
-        }
-        return Scaffold(
-          backgroundColor: AppColorPalette.iceBackground,
-          bottomNavigationBar: DetailCompleteBar(exercise: exercise),
-          body: CustomScrollView(
-            slivers: <Widget>[
-              SliverToBoxAdapter(
-                child: ExerciseDetailHero(
+    return Scaffold(
+      backgroundColor: AppColorPalette.iceBackground,
+      bottomNavigationBar: DetailCompleteBar(exerciseId: exerciseId),
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverToBoxAdapter(
+            child: BlocSelector<WorkoutCubit, WorkoutState, Exercise?>(
+              selector: (WorkoutState state) => state.exerciseById(exerciseId),
+              builder: (BuildContext context, Exercise? exercise) {
+                if (exercise == null) {
+                  return const SizedBox.shrink();
+                }
+                return ExerciseDetailHero(
                   exercise: exercise,
-                  onEdit: () => _openEdit(exercise),
-                  onDelete: () => _confirmDelete(exercise),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Transform.translate(
-                  offset: Offset(0, -32.h),
-                  child: Padding(
-                    padding: EdgeInsetsDirectional.symmetric(horizontal: 20.w),
-                    child: StaggeredEntrance(
-                      child: ExerciseStatStrip(exercise: exercise),
-                    ),
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: EdgeInsetsDirectional.fromSTEB(20.w, 0, 20.w, 0),
-                sliver: SliverToBoxAdapter(
-                  child: StaggeredEntrance(
-                    delay: StaggeredEntrance.delayForIndex(1),
-                    child: _interactiveCard(exercise),
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: EdgeInsetsDirectional.fromSTEB(20.w, 16.h, 20.w, 28.h),
-                sliver: SliverToBoxAdapter(
-                  child: ExerciseGuideSections(
-                    guide: ExerciseGuideLibrary.guideFor(
-                      exercise.name,
-                      exercise.category,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+                  onEdit: () => _openEdit(context, exercise),
+                  onDelete: () => _confirmDelete(context, exercise),
+                );
+              },
+            ),
           ),
-        );
-      },
+          SliverPadding(
+            padding: EdgeInsetsDirectional.fromSTEB(20.w, 20.h, 20.w, 0),
+            sliver: SliverToBoxAdapter(
+              child: StaggeredEntrance(
+                child: DetailToolSection(exerciseId: exerciseId),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsetsDirectional.fromSTEB(20.w, 16.h, 20.w, 32.h),
+            sliver: SliverToBoxAdapter(
+              child: StaggeredEntrance(
+                delay: StaggeredEntrance.delayForIndex(1),
+                child: BlocSelector<WorkoutCubit, WorkoutState, (String, String)?>(
+                  selector: (WorkoutState state) {
+                    final Exercise? exercise = state.exerciseById(exerciseId);
+                    if (exercise == null) {
+                      return null;
+                    }
+                    return (exercise.name, exercise.category);
+                  },
+                  builder: (BuildContext context, (String, String)? identity) {
+                    if (identity == null) {
+                      return const SizedBox.shrink();
+                    }
+                    return ExerciseGuideSections(
+                      guide: ExerciseGuideLibrary.guideFor(
+                        identity.$1,
+                        identity.$2,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

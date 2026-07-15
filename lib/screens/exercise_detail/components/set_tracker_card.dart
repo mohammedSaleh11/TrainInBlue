@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -7,8 +8,9 @@ import '../../../Core/constants/app_keys.dart';
 import '../../../Core/constants/app_strings.dart';
 import '../../../Core/constants/colors.dart';
 import 'detail_panel.dart';
+import 'set_tracker_parts.dart';
 
-/// Tap-to-fill set counter for repetition exercises with a linear progress bar.
+/// Tap-to-fill set counter for repetition exercises.
 class SetTrackerCard extends StatelessWidget {
   const SetTrackerCard({
     super.key,
@@ -22,6 +24,7 @@ class SetTrackerCard extends StatelessWidget {
   final int completedSets;
 
   void _onDotTap(BuildContext context, int index) {
+    HapticFeedback.selectionClick();
     final int nextDone = index < completedSets ? index : index + 1;
     context.read<WorkoutCubit>().trackCompletedSets(exerciseId, nextDone);
   }
@@ -29,58 +32,35 @@ class SetTrackerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
-    final bool allDone = completedSets >= sets;
-    final double progress = sets == 0 ? 0 : (completedSets / sets).clamp(0, 1);
+    final bool allDone = sets > 0 && completedSets >= sets;
 
     return DetailPanel(
       title: AppStrings.setTrackerTitle,
       icon: Icons.checklist_rounded,
-      trailing: Container(
-        padding: EdgeInsetsDirectional.symmetric(
-          horizontal: 10.w,
-          vertical: 4.h,
-        ),
-        decoration: BoxDecoration(
-          color: AppColorPalette.surfaceTintBlue,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Text(
-          AppStrings.setsTrackedLabel(completedSets, sets),
-          style: textTheme.labelMedium?.copyWith(
-            color: AppColorPalette.primaryBlueDark,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
+      trailing: _StatusPill(done: completedSets, total: sets),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 6.h,
-              backgroundColor: AppColorPalette.surfaceTintBlue,
-              color: allDone
-                  ? AppColorPalette.successGreen
-                  : AppColorPalette.primaryBlue,
+          SegmentedSetProgress(total: sets, done: completedSets),
+          SizedBox(height: 22.h),
+          Center(
+            child: Wrap(
+              spacing: 14.w,
+              runSpacing: 14.h,
+              alignment: WrapAlignment.center,
+              children: <Widget>[
+                for (int i = 0; i < sets; i++)
+                  SetDot(
+                    key: AppKeys.setDot(i),
+                    number: i + 1,
+                    isDone: i < completedSets,
+                    isCurrent: i == completedSets && !allDone,
+                    onTap: () => _onDotTap(context, i),
+                  ),
+              ],
             ),
           ),
-          SizedBox(height: 16.h),
-          Wrap(
-            spacing: 12.w,
-            runSpacing: 12.h,
-            children: <Widget>[
-              for (int i = 0; i < sets; i++)
-                _SetDot(
-                  key: AppKeys.setDot(i),
-                  number: i + 1,
-                  isDone: i < completedSets,
-                  onTap: () => _onDotTap(context, i),
-                ),
-            ],
-          ),
-          SizedBox(height: 14.h),
+          SizedBox(height: 18.h),
           Row(
             children: <Widget>[
               Icon(
@@ -90,16 +70,17 @@ class SetTrackerCard extends StatelessWidget {
                     ? AppColorPalette.successGreen
                     : AppColorPalette.textMuted,
               ),
-              SizedBox(width: 6.w),
+              SizedBox(width: 8.w),
               Expanded(
                 child: Text(
                   allDone
                       ? AppStrings.allSetsTracked
                       : AppStrings.setTrackerHint,
-                  style: textTheme.labelMedium?.copyWith(
+                  style: textTheme.bodySmall?.copyWith(
                     color: allDone
                         ? AppColorPalette.successGreen
                         : AppColorPalette.textMuted,
+                    height: 1.35,
                   ),
                 ),
               ),
@@ -111,69 +92,39 @@ class SetTrackerCard extends StatelessWidget {
   }
 }
 
-class _SetDot extends StatelessWidget {
-  const _SetDot({
-    super.key,
-    required this.number,
-    required this.isDone,
-    required this.onTap,
-  });
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.done, required this.total});
 
-  final int number;
-  final bool isDone;
-  final VoidCallback onTap;
+  final int done;
+  final int total;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      customBorder: const CircleBorder(),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        width: 48.r,
-        height: 48.r,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: isDone
-              ? const LinearGradient(
-                  colors: <Color>[
-                    AppColorPalette.primaryBlue,
-                    AppColorPalette.primaryBlueDark,
-                  ],
-                )
-              : null,
-          color: isDone ? null : AppColorPalette.surfaceTintBlue,
-          border: Border.all(
-            color: isDone
-                ? AppColorPalette.primaryBlueDark
-                : AppColorPalette.outlineSoft,
-            width: isDone ? 0 : 1,
-          ),
-          boxShadow: isDone
-              ? <BoxShadow>[
-                  BoxShadow(
-                    color: AppColorPalette.primaryBlue.withValues(alpha: 0.35),
-                    blurRadius: 10.r,
-                    offset: Offset(0, 4.h),
-                  ),
-                ]
-              : null,
+    final bool allDone = total > 0 && done >= total;
+    final bool started = done > 0;
+    final Color surface = allDone
+        ? AppColorPalette.successSurface
+        : started
+        ? AppColorPalette.surfaceTintBlue
+        : AppColorPalette.iceBackground;
+    final Color ink = allDone
+        ? AppColorPalette.successInk
+        : started
+        ? AppColorPalette.primaryBlueDark
+        : AppColorPalette.textSecondary;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      padding: EdgeInsetsDirectional.symmetric(horizontal: 10.w, vertical: 5.h),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        AppStrings.setsTrackedLabel(done, total),
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          color: ink,
+          fontWeight: FontWeight.w700,
         ),
-        child: isDone
-            ? Icon(
-                Icons.check_rounded,
-                size: 22.r,
-                color: AppColorPalette.textOnDark,
-              )
-            : Text(
-                '$number',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppColorPalette.primaryBlueDark,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
       ),
     );
   }
