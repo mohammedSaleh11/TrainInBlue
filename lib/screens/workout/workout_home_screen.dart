@@ -32,7 +32,7 @@ class WorkoutHomeScreen extends StatelessWidget {
   }
 
   void _openExerciseDetail(BuildContext context, Exercise exercise) {
-    NavigationService.push(
+    NavigationService.pushFade(
       ExerciseDetailScreen(exerciseId: exercise.id),
       context: context,
     );
@@ -46,11 +46,10 @@ class WorkoutHomeScreen extends StatelessWidget {
       confirmLabel: AppStrings.delete,
     );
     if (confirmed && context.mounted) {
-      context.read<WorkoutCubit>().deleteExercise(exercise.id);
+      await context.read<WorkoutCubit>().deleteExercise(exercise.id);
     }
   }
 
-  /// Explains exactly what will be lost before restoring starter data.
   Future<void> _confirmReset(BuildContext context) async {
     final WorkoutCubit cubit = context.read<WorkoutCubit>();
     final bool confirmed = await showConfirmDialog(
@@ -60,6 +59,7 @@ class WorkoutHomeScreen extends StatelessWidget {
         completedCount: cubit.state.progress.completedCount,
       ),
       confirmLabel: AppStrings.reset,
+      icon: Icons.restart_alt_rounded,
     );
     if (confirmed) {
       await cubit.resetWorkout();
@@ -82,11 +82,16 @@ class WorkoutHomeScreen extends StatelessWidget {
       );
   }
 
-  /// Acknowledges before showing so the celebration can never re-trigger
-  /// (for example after restart).
   void _showCelebration(BuildContext context, WorkoutState state) {
     context.read<WorkoutCubit>().acknowledgeCelebration();
     showCelebrationDialog(context, totalExercises: state.progress.totalCount);
+  }
+
+  /// Only swap loading / failure / session shells. Progress and cards
+  /// subscribe themselves so a single toggle never rebuilds the scaffold.
+  static bool _buildWhen(WorkoutState previous, WorkoutState current) {
+    return previous.status != current.status ||
+        previous.failureReason != current.failureReason;
   }
 
   @override
@@ -102,11 +107,11 @@ class WorkoutHomeScreen extends StatelessWidget {
         BlocListener<WorkoutCubit, WorkoutState>(
           listenWhen: (WorkoutState previous, WorkoutState current) =>
               !previous.celebrationPending && current.celebrationPending,
-          listener: (BuildContext context, WorkoutState state) =>
-              _showCelebration(context, state),
+          listener: _showCelebration,
         ),
       ],
       child: BlocBuilder<WorkoutCubit, WorkoutState>(
+        buildWhen: _buildWhen,
         builder: (BuildContext context, WorkoutState state) {
           return Scaffold(
             floatingActionButton: state.status == WorkoutStatus.ready
@@ -123,7 +128,6 @@ class WorkoutHomeScreen extends StatelessWidget {
                 reason: state.failureReason!,
               ),
               WorkoutStatus.ready || WorkoutStatus.empty => WorkoutSessionView(
-                state: state,
                 onResetWorkout: () => _confirmReset(context),
                 onAddExercise: () => _openAddExercise(context),
                 onOpenExercise: (Exercise exercise) =>

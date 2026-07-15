@@ -7,13 +7,19 @@ import '../../../Core/constants/app_keys.dart';
 import '../../../Core/constants/app_strings.dart';
 import '../../../Core/constants/colors.dart';
 import '../../../app_theme/theme_extension.dart';
+import 'workout_exercise_count_badge.dart';
 
 /// Hero header of the workout home: brand row with overflow menu on top of
 /// the studio photograph, and the session title anchored to the bottom.
 class WorkoutHeroHeader extends StatelessWidget {
-  const WorkoutHeroHeader({super.key, required this.onResetWorkout});
+  const WorkoutHeroHeader({
+    super.key,
+    required this.onResetWorkout,
+    required this.exerciseCount,
+  });
 
   final VoidCallback onResetWorkout;
+  final int exerciseCount;
 
   String get _greeting => switch (Daypart.of(DateTime.now())) {
     Daypart.morning => AppStrings.goodMorning,
@@ -23,9 +29,9 @@ class WorkoutHeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double topInset = MediaQuery.paddingOf(context).top;
+    final double topInset = MediaQuery.viewPaddingOf(context).top;
     return SizedBox(
-      height: 250.h + topInset,
+      height: 280.h + topInset,
       child: ClipRRect(
         borderRadius: BorderRadiusDirectional.only(
           bottomStart: Radius.circular(32.r),
@@ -34,7 +40,14 @@ class WorkoutHeroHeader extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
-            Image.asset(AppAssets.workoutHero, fit: BoxFit.cover),
+            Image.asset(
+              AppAssets.workoutHero,
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.medium,
+              cacheWidth: (MediaQuery.sizeOf(context).width *
+                      MediaQuery.devicePixelRatioOf(context))
+                  .round(),
+            ),
             const DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -89,17 +102,25 @@ class WorkoutHeroHeader extends StatelessWidget {
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.3,
-                      color: AppColorPalette.skyBlue,
+                      color: AppColorPalette.textOnDark.withValues(alpha: 0.88),
                     ),
                   ),
                   SizedBox(height: 6.h),
-                  Text(
-                    AppStrings.yourWorkout,
-                    style: TextStyle(
-                      fontSize: 30.sp,
-                      fontWeight: FontWeight.w800,
-                      color: AppColorPalette.textOnDark,
-                    ),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          AppStrings.yourWorkout,
+                          style: TextStyle(
+                            fontSize: 30.sp,
+                            fontWeight: FontWeight.w800,
+                            color: AppColorPalette.textOnDark,
+                          ),
+                        ),
+                      ),
+                      if (exerciseCount > 0)
+                        WorkoutExerciseCountBadge(count: exerciseCount),
+                    ],
                   ),
                   SizedBox(height: 4.h),
                   Text(

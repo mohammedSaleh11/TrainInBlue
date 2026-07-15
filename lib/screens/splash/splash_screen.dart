@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../Blocs/onboarding/onboarding_cubit.dart';
+import '../../Core/constants/app_assets.dart';
 import '../../Core/constants/app_strings.dart';
 import '../../Core/constants/colors.dart';
 import '../../Core/services/navigation_service.dart';
@@ -76,6 +77,31 @@ class _SplashScreenState extends State<SplashScreen>
       _minimumTimeElapsed = true;
       _openNextScreen();
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_precacheBrandAssets());
+    });
+  }
+
+  /// Warm the image cache during the splash so the next screen paints hot.
+  Future<void> _precacheBrandAssets() async {
+    if (!mounted) {
+      return;
+    }
+    final List<String> assets = <String>[
+      AppAssets.appIcon,
+      AppAssets.workoutHero,
+      AppAssets.onboardingBuild,
+      AppAssets.onboardingProgress,
+      AppAssets.onboardingResume,
+      AppAssets.emptyWorkout,
+      AppAssets.celebration,
+    ];
+    await Future.wait(
+      assets.map(
+        (String path) => precacheImage(AssetImage(path), context),
+      ),
+    );
   }
 
   @override

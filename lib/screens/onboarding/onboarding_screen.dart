@@ -54,13 +54,12 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
-  int _currentPage = 0;
-
-  bool get _isLastPage => _currentPage == _pages.length - 1;
+  final ValueNotifier<int> _currentPage = ValueNotifier<int>(0);
 
   @override
   void dispose() {
     _pageController.dispose();
+    _currentPage.dispose();
     super.dispose();
   }
 
@@ -86,7 +85,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           PageView.builder(
             controller: _pageController,
             itemCount: _pages.length,
-            onPageChanged: (int page) => setState(() => _currentPage = page),
+            onPageChanged: (int page) => _currentPage.value = page,
             itemBuilder: (BuildContext context, int index) {
               final _OnboardingPageContent page = _pages[index];
               return OnboardingPage(
@@ -96,58 +95,78 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               );
             },
           ),
-          if (!_isLastPage)
-            SafeArea(
-              child: Align(
-                alignment: AlignmentDirectional.topEnd,
-                child: Padding(
-                  padding: EdgeInsetsDirectional.only(top: 12.h, end: 16.w),
-                  child: _SkipChip(onPressed: _finishOnboarding),
-                ),
-              ),
-            ),
-          SafeArea(
-            child: Align(
-              alignment: AlignmentDirectional.bottomCenter,
-              child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(24.w, 0, 24.w, 16.h),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    DotPageIndicator(
-                      pageCount: _pages.length,
-                      currentPage: _currentPage,
-                    ),
-                    SizedBox(height: 18.h),
-                    Row(
-                      children: <Widget>[
-                        if (_currentPage > 0) ...<Widget>[
-                          OutlinedButton(
-                            key: AppKeys.onboardingBack,
-                            onPressed: () => _goToPage(_currentPage - 1),
-                            child: const Text(AppStrings.back),
+          ValueListenableBuilder<int>(
+            valueListenable: _currentPage,
+            builder: (BuildContext context, int currentPage, Widget? _) {
+              final bool isLastPage = currentPage == _pages.length - 1;
+              return Stack(
+                children: <Widget>[
+                  if (!isLastPage)
+                    SafeArea(
+                      child: Align(
+                        alignment: AlignmentDirectional.topEnd,
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.only(
+                            top: 12.h,
+                            end: 16.w,
                           ),
-                          SizedBox(width: 12.w),
-                        ],
-                        Expanded(
-                          child: _isLastPage
-                              ? PrimaryActionButton(
-                                  key: AppKeys.onboardingFinish,
-                                  label: AppStrings.buildMyWorkout,
-                                  onPressed: _finishOnboarding,
-                                )
-                              : PrimaryActionButton(
-                                  key: AppKeys.onboardingNext,
-                                  label: AppStrings.next,
-                                  onPressed: () => _goToPage(_currentPage + 1),
-                                ),
+                          child: _SkipChip(onPressed: _finishOnboarding),
                         ),
-                      ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  SafeArea(
+                    child: Align(
+                      alignment: AlignmentDirectional.bottomCenter,
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(
+                          24.w,
+                          0,
+                          24.w,
+                          16.h,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            DotPageIndicator(
+                              pageCount: _pages.length,
+                              currentPage: currentPage,
+                            ),
+                            SizedBox(height: 18.h),
+                            Row(
+                              children: <Widget>[
+                                if (currentPage > 0) ...<Widget>[
+                                  OutlinedButton(
+                                    key: AppKeys.onboardingBack,
+                                    onPressed: () =>
+                                        _goToPage(currentPage - 1),
+                                    child: const Text(AppStrings.back),
+                                  ),
+                                  SizedBox(width: 12.w),
+                                ],
+                                Expanded(
+                                  child: isLastPage
+                                      ? PrimaryActionButton(
+                                          key: AppKeys.onboardingFinish,
+                                          label: AppStrings.buildMyWorkout,
+                                          onPressed: _finishOnboarding,
+                                        )
+                                      : PrimaryActionButton(
+                                          key: AppKeys.onboardingNext,
+                                          label: AppStrings.next,
+                                          onPressed: () =>
+                                              _goToPage(currentPage + 1),
+                                        ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
