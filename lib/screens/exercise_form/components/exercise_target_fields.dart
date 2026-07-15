@@ -4,11 +4,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../Core/Utils/exercise_draft_validator.dart';
 import '../../../Core/constants/app_keys.dart';
 import '../../../Core/constants/app_strings.dart';
+import '../../../Core/constants/colors.dart';
 import '../../../components/Inputs/app_text_field.dart';
 import '../../../data/models/exercise_target_type.dart';
+import 'category_chip.dart';
+import 'target_type_toggle.dart';
 
-/// Target section of the exercise form: the repetitions/duration selector,
-/// the sets field, and the input for the selected target type only.
+/// Target section: repetitions/duration toggle plus sets and target inputs.
 class ExerciseTargetFields extends StatelessWidget {
   const ExerciseTargetFields({
     super.key,
@@ -17,6 +19,7 @@ class ExerciseTargetFields extends StatelessWidget {
     required this.setsController,
     required this.repetitionsController,
     required this.durationController,
+    this.showSectionLabel = true,
   });
 
   final ExerciseTargetType targetType;
@@ -24,36 +27,36 @@ class ExerciseTargetFields extends StatelessWidget {
   final TextEditingController setsController;
   final TextEditingController repetitionsController;
   final TextEditingController durationController;
+  final bool showSectionLabel;
 
   @override
   Widget build(BuildContext context) {
+    final bool usesReps = targetType == ExerciseTargetType.repetitions;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          AppStrings.targetTypeLabel,
-          style: Theme.of(context).textTheme.titleMedium,
+        if (showSectionLabel) ...<Widget>[
+          Text(
+            AppStrings.targetTypeLabel,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          SizedBox(height: 10.h),
+        ],
+        TargetTypeToggle(
+          targetType: targetType,
+          onChanged: (ExerciseTargetType type) {
+            formSelectionHaptic();
+            onTargetTypeChanged(type);
+          },
         ),
         SizedBox(height: 10.h),
-        SizedBox(
-          width: double.infinity,
-          child: SegmentedButton<ExerciseTargetType>(
-            key: AppKeys.targetTypeSelector,
-            segments: ExerciseTargetType.values
-                .map(
-                  (ExerciseTargetType type) =>
-                      ButtonSegment<ExerciseTargetType>(
-                        value: type,
-                        label: Text(type.label),
-                      ),
-                )
-                .toList(growable: false),
-            selected: <ExerciseTargetType>{targetType},
-            onSelectionChanged: (Set<ExerciseTargetType> selection) =>
-                onTargetTypeChanged(selection.first),
-          ),
+        Text(
+          AppStrings.targetFieldsHint,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColorPalette.textMuted),
         ),
-        SizedBox(height: 18.h),
+        SizedBox(height: 16.h),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -61,25 +64,38 @@ class ExerciseTargetFields extends StatelessWidget {
               child: AppNumberField(
                 controller: setsController,
                 label: AppStrings.setsLabel,
+                hint: AppStrings.setsHint,
                 fieldKey: AppKeys.setsField,
+                fillColor: AppColorPalette.iceBackground,
                 validator: ExerciseDraftValidator.validateSets,
               ),
             ),
             SizedBox(width: 14.w),
             Expanded(
-              child: targetType == ExerciseTargetType.repetitions
-                  ? AppNumberField(
-                      controller: repetitionsController,
-                      label: AppStrings.repetitionsLabel,
-                      fieldKey: AppKeys.repetitionsField,
-                      validator: ExerciseDraftValidator.validateRepetitions,
-                    )
-                  : AppNumberField(
-                      controller: durationController,
-                      label: AppStrings.durationLabel,
-                      fieldKey: AppKeys.durationField,
-                      validator: ExerciseDraftValidator.validateDurationSeconds,
-                    ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+                child: AppNumberField(
+                  key: ValueKey<ExerciseTargetType>(targetType),
+                  controller: usesReps
+                      ? repetitionsController
+                      : durationController,
+                  label: usesReps
+                      ? AppStrings.repetitionsLabel
+                      : AppStrings.durationLabel,
+                  hint: usesReps
+                      ? AppStrings.repetitionsHint
+                      : AppStrings.durationHint,
+                  fieldKey: usesReps
+                      ? AppKeys.repetitionsField
+                      : AppKeys.durationField,
+                  fillColor: AppColorPalette.iceBackground,
+                  validator: usesReps
+                      ? ExerciseDraftValidator.validateRepetitions
+                      : ExerciseDraftValidator.validateDurationSeconds,
+                ),
+              ),
             ),
           ],
         ),
