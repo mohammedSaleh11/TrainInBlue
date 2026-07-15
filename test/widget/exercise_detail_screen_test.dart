@@ -46,7 +46,7 @@ void main() {
 
     await openDetail(tester, 'ex-1');
 
-    expect(find.text(AppStrings.howToPerform), findsOneWidget);
+    expect(find.text('Squat'), findsWidgets);
     expect(find.text(AppStrings.setTrackerTitle), findsOneWidget);
     expect(find.text(AppStrings.markComplete), findsOneWidget);
 
@@ -75,7 +75,7 @@ void main() {
 
     await openDetail(tester, 'ex-1');
     expect(find.text(AppStrings.setTrackerTitle), findsOneWidget);
-    expect(find.text(AppStrings.howToPerform), findsOneWidget);
+    expect(find.text(AppStrings.markComplete), findsOneWidget);
 
     await tester.tap(find.byKey(AppKeys.setDot(0)));
     await tester.pumpAndSettle();
@@ -86,10 +86,7 @@ void main() {
     expect(find.text(AppStrings.setsTrackedLabel(3, 3)), findsOneWidget);
     expect(find.text(AppStrings.allSetsTracked), findsOneWidget);
 
-    expect(
-      repository.savedExercises!.first.completedSets,
-      3,
-    );
+    expect(repository.savedExercises!.first.completedSets, 3);
 
     await tester.tap(find.byKey(AppKeys.detailBackButton));
     await tester.pumpAndSettle();
@@ -109,6 +106,7 @@ void main() {
           category: 'Core',
           targetType: ExerciseTargetType.duration,
           durationSeconds: 30,
+          sets: 1,
         ),
       ],
     );
@@ -127,6 +125,59 @@ void main() {
     await tester.pump(const Duration(seconds: 16));
     expect(find.text('0:00'), findsOneWidget);
     expect(find.text(AppStrings.timerDone), findsOneWidget);
+    expect(find.byKey(AppKeys.timerNextSetButton), findsOneWidget);
+    expect(find.text(AppStrings.timerFinishLastSet), findsOneWidget);
+
+    await tester.tap(find.byKey(AppKeys.timerNextSetButton));
+    await tester.pumpAndSettle();
+    expect(find.text(AppStrings.allSetsTracked), findsOneWidget);
+    expect(repository.savedExercises!.first.completedSets, 1);
+  });
+
+  testWidgets('duration timer advances to the next set', (
+    WidgetTester tester,
+  ) async {
+    await pumpHome(
+      tester,
+      savedExercises: <Exercise>[
+        buildExercise(
+          id: 'ex-1',
+          order: 0,
+          name: 'Jumping Jacks',
+          category: 'Cardio',
+          targetType: ExerciseTargetType.duration,
+          durationSeconds: 10,
+          sets: 2,
+        ),
+      ],
+    );
+
+    await openDetail(tester, 'ex-1');
+    await tester.ensureVisible(find.byKey(AppKeys.timerToggleButton));
+    await tester.pumpAndSettle();
+    expect(find.text(AppStrings.timerSetLabel(1, 2)), findsOneWidget);
+
+    await tester.tap(find.byKey(AppKeys.timerToggleButton));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 11));
+    expect(find.text(AppStrings.timerDone), findsOneWidget);
+    expect(find.text(AppStrings.timerNextSet), findsOneWidget);
+
+    await tester.tap(find.byKey(AppKeys.timerNextSetButton));
+    await tester.pumpAndSettle();
+    expect(repository.savedExercises!.first.completedSets, 1);
+    expect(find.text(AppStrings.timerSetLabel(2, 2)), findsOneWidget);
+    expect(find.text('0:10'), findsOneWidget);
+
+    await tester.tap(find.byKey(AppKeys.timerToggleButton));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 11));
+    expect(find.text(AppStrings.timerFinishLastSet), findsOneWidget);
+
+    await tester.tap(find.byKey(AppKeys.timerNextSetButton));
+    await tester.pumpAndSettle();
+    expect(repository.savedExercises!.first.completedSets, 2);
+    expect(find.text(AppStrings.allSetsTracked), findsOneWidget);
   });
 
   testWidgets('deleting from detail returns home and removes the exercise', (

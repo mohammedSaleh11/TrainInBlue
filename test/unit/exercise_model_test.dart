@@ -154,14 +154,14 @@ void main() {
 
     test('rejects unsupported schema versions and malformed payloads', () {
       expect(
-        () => WorkoutSnapshot.fromJson(<String, dynamic>{
+        () => WorkoutSnapshot.fromJson(const <String, dynamic>{
           'schemaVersion': 99,
-          'exercises': const <Object>[],
+          'exercises': <Object>[],
         }),
         throwsFormatException,
       );
       expect(
-        () => WorkoutSnapshot.fromJson(<String, dynamic>{
+        () => WorkoutSnapshot.fromJson(const <String, dynamic>{
           'schemaVersion': 1,
           'exercises': 'not-a-list',
         }),
